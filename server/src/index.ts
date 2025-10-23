@@ -2,6 +2,9 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import config from './config/env';
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import { errorHandler } from './middleware/error.middleware';
 
 const app: Application = express();
 
@@ -23,10 +26,10 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// API routes will be added here
-// app.use('/api/auth', authRoutes);
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 // app.use('/api/tasks', taskRoutes);
-// app.use('/api/users', userRoutes);
 // app.use('/api/achievements', achievementRoutes);
 
 // 404 handler
@@ -37,15 +40,8 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// Global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
-  
-  res.status(500).json({
-    success: false,
-    message: config.nodeEnv === 'development' ? err.message : 'Internal server error',
-  });
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
 const PORT = config.port;
