@@ -1,0 +1,46 @@
+# ----------------------------------------
+# Node/NPM
+# ----------------------------------------
+# Global dependencies
+node_modules/
+
+# Ignore project-specific node_modules (if any sub-project has its own)
+client/node_modules/
+server/node_modules/
+
+# ----------------------------------------
+# Secrets
+# ----------------------------------------
+# Environment files must NEVER be committed
+.env
+.env.*
+.DS_Store
+
+# ----------------------------------------
+# Build Artifacts
+# ----------------------------------------
+# React build output
+client/build/
+client/dist/
+
+# Other build/output folders
+server/dist/
+out/
+
+# ----------------------------------------
+# Logs and NPM Debugging
+# ----------------------------------------
+npm-debug.log*
+yarn-error.log
+/pnpm-debug.log
+
+# ----------------------------------------
+# TypeScript & Editor Config
+# ----------------------------------------
+# Compiled JavaScript files from TypeScript (if not in a build folder)
+*.js.map
+*.d.ts
+
+# VS Code settings that aren't shared
+.vscode/
+# Note: You can commit .vscode/settings.json or extensions.json if you want to share workspace settings.
