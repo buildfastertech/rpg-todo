@@ -538,17 +538,20 @@ This ensures LLM agents have proper context without loading all documentation un
 ### To-dos
 
 - [x] Create MDC files for framework standards (react, express, shadcn, tailwind, supabase) and framework glossary
-- [ ] Create Supabase database schema (6 tables: Users, Tasks, Achievements, Achievement_User, Custom_Labels, Points_Ledger with proper indexes and RLS)
-- [ ] Create database functions (get_user_total_xp, calculate_level_from_xp, award_xp, get_completed_task_count, get_urgent_tasks_this_week)
-- [ ] Implement security measures (bcrypt, encryption, GDPR consent flow)
+- [x] Create Supabase database schema (6 tables: Users, Tasks, Achievements, Achievement_User, Custom_Labels, Points_Ledger with proper indexes and RLS)
+- [x] Create database functions (get_user_total_xp, calculate_level_from_xp, award_xp, get_completed_task_count, get_urgent_tasks_this_week)
+- [x] Seed achievements table with achievement definitions (Novice, Apprentice, etc.)
+- [x] Implement security measures - bcrypt for password hashing
+- [x] Implement user registration and authentication system with ledger-based XP rewards (POST /api/auth/register, /api/auth/login, /api/auth/logout)
+- [x] Create Postman collection and environment files for API testing
+- [x] Build profile display and editing functionality (GET /api/users/profile, PUT /api/users/profile, GET /api/users/stats, GET /api/users/xp-history)
+- [ ] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks)
 - [ ] Build core UI structure with Shadcn/TailwindCSS (Header, layout, navigation, design system)
-- [ ] Implement user registration and authentication system with Supabase Auth (with ledger-based XP rewards)
-- [ ] Build profile display and editing functionality (showing calculated XP, task count, and XP history)
-- [ ] Implement ledger-based XP system and level progression (using award_xp function)
 - [ ] Build task creation form with validation and task-based labels (multiple labels per task)
 - [ ] Implement task list display with sorting, filtering, color-coding, pagination, and label display
 - [ ] Build task edit, delete, complete, and archive functionality with ledger-based XP rewards
-- [ ] Seed achievements table with achievement definitions (Novice, Apprentice, etc.)
+- [ ] Build achievement routes (GET /api/achievements, GET /api/achievements/user)
 - [ ] Implement achievement tracking system using achievement_user join table
 - [ ] Build achievements section with progress bars and unlock notifications
+- [ ] Implement GDPR consent flow
 - [ ] Add Terms of Service and Privacy Policy links in Settings
