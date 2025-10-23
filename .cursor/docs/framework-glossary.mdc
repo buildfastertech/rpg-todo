@@ -1,0 +1,136 @@
+---
+alwaysApply: true
+---
+
+# Framework Glossary & Routing Guide
+
+This glossary helps AI agents identify which framework-specific documentation to reference based on prompt context.
+
+## Framework Keywords & When to Load Documentation
+
+### React (`react-standards.mdc`)
+**Load when prompt mentions:**
+- React components, hooks, useState, useEffect, useContext
+- JSX, props, state management
+- Component lifecycle, custom hooks
+- Frontend components, UI components
+- Pages, routing with React Router
+- Client-side rendering
+
+**Example prompts:**
+- "Create a React component for..."
+- "Add a useState hook to..."
+- "Build a custom hook for..."
+- "Create a page component..."
+
+### Express (`express-standards.mdc`)
+**Load when prompt mentions:**
+- Express routes, middleware, controllers
+- API endpoints, REST API
+- Request, response, req, res
+- Server routes, backend API
+- HTTP methods (GET, POST, PUT, DELETE)
+- Route handlers, error handling middleware
+
+**Example prompts:**
+- "Create an API route for..."
+- "Add middleware to..."
+- "Build an Express controller..."
+- "Create a POST endpoint..."
+
+### Shadcn UI (`shadcn-standards.mdc`)
+**Load when prompt mentions:**
+- Shadcn components (Button, Card, Dialog, Toast, etc.)
+- UI library components
+- Form components, Input, Select
+- Dialog, Modal, AlertDialog
+- Toast notifications, Toaster
+- Accordion, Tabs, Sheet
+
+**Example prompts:**
+- "Use Shadcn Button component..."
+- "Add a Dialog from Shadcn..."
+- "Create a form with Shadcn components..."
+- "Add toast notifications..."
+
+### TailwindCSS (`tailwind-standards.mdc`)
+**Load when prompt mentions:**
+- Tailwind classes, utility classes
+- Styling, CSS, responsive design
+- className, styles
+- Colors, spacing, layout utilities
+- Flexbox, grid, positioning
+- Dark mode, theme customization
+
+**Example prompts:**
+- "Style this with Tailwind..."
+- "Add responsive classes..."
+- "Use Tailwind utilities for..."
+- "Make it responsive using..."
+
+### Supabase (`supabase-standards.mdc`)
+**Load when prompt mentions:**
+- Supabase client, database queries
+- Authentication, auth, login, signup
+- Row Level Security, RLS policies
+- Database tables, PostgreSQL
+- Real-time subscriptions
+- Supabase storage, bucket
+
+**Example prompts:**
+- "Query Supabase for..."
+- "Set up RLS policies..."
+- "Implement Supabase auth..."
+- "Create a database table..."
+
+## Multi-Framework Scenarios
+
+When a prompt involves multiple frameworks, load all relevant documentation:
+
+**Example: "Create a React form component that posts to an Express API"**
+- Load: `react-standards.mdc` + `express-standards.mdc` + `shadcn-standards.mdc`
+
+**Example: "Style the Shadcn Button with Tailwind classes"**
+- Load: `shadcn-standards.mdc` + `tailwind-standards.mdc`
+
+**Example: "Create an Express endpoint that queries Supabase"**
+- Load: `express-standards.mdc` + `supabase-standards.mdc`
+
+## Project Structure Reference
+
+```
+rpg-todo/
+├── client/              # React, Shadcn, TailwindCSS
+│   ├── src/
+│   │   ├── components/  # React + Shadcn + Tailwind
+│   │   ├── pages/       # React
+│   │   ├── hooks/       # React
+│   │   ├── services/    # API calls to Express backend
+│   │   └── styles/      # TailwindCSS
+│
+├── server/              # Express, Supabase
+│   ├── src/
+│   │   ├── routes/      # Express
+│   │   ├── controllers/ # Express
+│   │   ├── middleware/  # Express
+│   │   ├── services/    # Business logic (may use Supabase)
+│   │   └── config/      # Supabase configuration
+```
+
+## Quick Decision Tree
+
+1. **Is it frontend UI?** → React, Shadcn, Tailwind
+2. **Is it backend API?** → Express, Supabase
+3. **Is it database/auth?** → Supabase
+4. **Is it styling?** → Tailwind
+5. **Is it a UI component?** → Shadcn (if pre-built) or React (if custom)
+6. **Is it server routing?** → Express
+
+## Default Behavior
+
+If no specific framework is mentioned but context implies:
+- **Client folder** → React + Shadcn + Tailwind
+- **Server folder** → Express + Supabase
+- **Components** → React + Shadcn + Tailwind
+- **Routes** → Express
+- **Database** → Supabase
