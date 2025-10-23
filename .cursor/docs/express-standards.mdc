@@ -1,0 +1,479 @@
+---
+alwaysApply: false
+---
+
+# Express Standards for RPG Todo
+
+## Core Principles
+
+1. **TypeScript** - Use TypeScript for type safety
+2. **Async/Await** - Use async/await over callbacks
+3. **Error Handling** - Centralized error handling middleware
+4. **Validation** - Validate all inputs
+5. **Security** - Implement security best practices
+
+## File Structure
+
+```
+server/src/
+├── routes/
+│   ├── auth.routes.ts
+│   ├── task.routes.ts
+│   ├── user.routes.ts
+│   └── achievement.routes.ts
+├── controllers/
+│   ├── auth.controller.ts
+│   ├── task.controller.ts
+│   ├── user.controller.ts
+│   └── achievement.controller.ts
+├── middleware/
+│   ├── auth.middleware.ts
+│   ├── error.middleware.ts
+│   └── validation.middleware.ts
+├── services/
+│   ├── xp.service.ts
+│   ├── achievement.service.ts
+│   ├── task.service.ts
+│   └── user.service.ts
+├── models/
+│   ├── task.model.ts
+│   ├── user.model.ts
+│   └── achievement.model.ts
+├── utils/
+│   ├── bcrypt.util.ts
+│   └── jwt.util.ts
+├── config/
+│   ├── supabase.ts
+│   └── env.ts
+└── index.ts
+```
+
+## Server Setup
+
+```typescript
+// server/src/index.ts
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { authRoutes } from './routes/auth.routes';
+import { taskRoutes } from './routes/task.routes';
+import { userRoutes } from './routes/user.routes';
+import { achievementRoutes } from './routes/achievement.routes';
+import { errorHandler } from './middleware/error.middleware';
+import { config } from './config/env';
+
+const app = express();
+
+// Middleware
+app.use(helmet());
+app.use(cors({
+  origin: config.clientUrl,
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/achievements', achievementRoutes);
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handling (must be last)
+app.use(errorHandler);
+
+const PORT = config.port || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+## Route Patterns
+
+### Route Definition
+
+```typescript
+// routes/task.routes.ts
+import { Router } from 'express';
+import { taskController } from '../controllers/task.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { validateTask } from '../middleware/validation.middleware';
+
+const router = Router();
+
+// All task routes require authentication
+router.use(authMiddleware);
+
+router.get('/', taskController.getTasks);
+router.get('/:id', taskController.getTaskById);
+router.post('/', validateTask, taskController.createTask);
+router.put('/:id', validateTask, taskController.updateTask);
+router.delete('/:id', taskController.deleteTask);
+router.patch('/:id/complete', taskController.completeTask);
+router.patch('/:id/archive', taskController.archiveTask);
+
+export { router as taskRoutes };
+```
+
+### Controller Pattern
+
+```typescript
+// controllers/task.controller.ts
+import { Request, Response, NextFunction } from 'express';
+import { taskService } from '../services/task.service';
+import { xpService } from '../services/xp.service';
+import { achievementService } from '../services/achievement.service';
+
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+}
+
+export const taskController = {
+  async getTasks(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+      const { status, priority, page = 1, limit = 25 } = req.query;
+
+      const tasks = await taskService.getTasks(userId, {
+        status: status as string,
+        priority: priority as string,
+        page: Number(page),
+        limit: Number(limit)
+      });
+
+      res.json({ success: true, data: tasks });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async createTask(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+      const taskData = req.body;
+
+      const task = await taskService.createTask(userId, taskData);
+
+      res.status(201).json({ success: true, data: task });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async completeTask(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!.id;
+      const { id } = req.params;
+
+      const task = await taskService.completeTask(id, userId);
+      
+      // Award XP
+      await xpService.awardXP(userId, task.xpValue);
+      
+      // Check achievements
+      const newAchievements = await achievementService.checkAchievements(userId);
+
+      res.json({ 
+        success: true, 
+        data: { task, xpAwarded: task.xpValue, newAchievements } 
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // ... other controller methods
+};
+```
+
+## Service Layer
+
+Extract business logic into services:
+
+```typescript
+// services/task.service.ts
+import { supabase } from '../config/supabase';
+import { Task, CreateTaskInput, TaskStatus } from '../models/task.model';
+
+interface TaskFilters {
+  status?: string;
+  priority?: string;
+  page: number;
+  limit: number;
+}
+
+export const taskService = {
+  async getTasks(userId: string, filters: TaskFilters): Promise<Task[]> {
+    let query = supabase
+      .from('tasks')
+      .select('*')
+      .eq('user_id', userId)
+      .order('due_date', { ascending: true })
+      .order('priority', { ascending: false });
+
+    if (filters.status) {
+      query = query.eq('status', filters.status);
+    }
+
+    if (filters.priority) {
+      query = query.eq('priority', filters.priority);
+    }
+
+    const from = (filters.page - 1) * filters.limit;
+    const to = from + filters.limit - 1;
+    query = query.range(from, to);
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch tasks: ${error.message}`);
+    }
+
+    return data as Task[];
+  },
+
+  async createTask(userId: string, taskData: CreateTaskInput): Promise<Task> {
+    const xpValue = calculateXPForPriority(taskData.priority);
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert({
+        user_id: userId,
+        ...taskData,
+        xp_value: xpValue,
+        status: TaskStatus.Open
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create task: ${error.message}`);
+    }
+
+    return data as Task;
+  },
+
+  async completeTask(taskId: string, userId: string): Promise<Task> {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ status: TaskStatus.Completed })
+      .eq('id', taskId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to complete task: ${error.message}`);
+    }
+
+    // Increment completed task count
+    await supabase.rpc('increment_completed_tasks', { user_id: userId });
+
+    return data as Task;
+  },
+
+  // ... other service methods
+};
+
+const calculateXPForPriority = (priority: string): number => {
+  const xpMap: Record<string, number> = {
+    Low: 10,
+    Medium: 25,
+    High: 50,
+    Urgent: 75
+  };
+  return xpMap[priority] || 10;
+};
+```
+
+## Middleware Patterns
+
+### Authentication Middleware
+
+```typescript
+// middleware/auth.middleware.ts
+import { Request, Response, NextFunction } from 'express';
+import { verifyToken } from '../utils/jwt.util';
+
+interface AuthRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+  };
+}
+
+export const authMiddleware = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Authentication required' 
+      });
+    }
+
+    const decoded = await verifyToken(token);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ 
+      success: false, 
+      message: 'Invalid or expired token' 
+    });
+  }
+};
+```
+
+### Validation Middleware
+
+```typescript
+// middleware/validation.middleware.ts
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+
+const taskSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(1000).optional(),
+  dueDate: z.string().datetime(),
+  priority: z.enum(['Low', 'Medium', 'High', 'Urgent']),
+  category: z.string().max(50).optional()
+});
+
+export const validateTask = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    taskSchema.parse(req.body);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: error.errors
+      });
+    }
+    next(error);
+  }
+};
+```
+
+### Error Handling Middleware
+
+```typescript
+// middleware/error.middleware.ts
+import { Request, Response, NextFunction } from 'express';
+
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    public message: string,
+    public isOperational = true
+  ) {
+    super(message);
+    Object.setPrototypeOf(this, AppError.prototype);
+  }
+}
+
+export const errorHandler = (
+  err: Error | AppError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message
+    });
+  }
+
+  // Log unexpected errors
+  console.error('Unexpected error:', err);
+
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
+};
+```
+
+## XP and Achievement Services
+
+```typescript
+// services/xp.service.ts
+import { supabase } from '../config/supabase';
+
+const LEVEL_THRESHOLDS = [
+  0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 14500
+  // ... up to level 100
+];
+
+export const xpService = {
+  async awardXP(userId: string, xpAmount: number): Promise<{ 
+    newXP: number; 
+    newLevel: number; 
+    leveledUp: boolean; 
+  }> {
+    const { data: user } = await supabase
+      .from('users')
+      .select('xp, level')
+      .eq('id', userId)
+      .single();
+
+    const newXP = user.xp + xpAmount;
+    const newLevel = calculateLevel(newXP);
+    const leveledUp = newLevel > user.level;
+
+    await supabase
+      .from('users')
+      .update({ xp: newXP, level: newLevel })
+      .eq('id', userId);
+
+    return { newXP, newLevel, leveledUp };
+  },
+
+  calculateXPForNextLevel(currentLevel: number): number {
+    return LEVEL_THRESHOLDS[currentLevel] || 0;
+  }
+};
+
+const calculateLevel = (xp: number): number => {
+  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+    if (xp >= LEVEL_THRESHOLDS[i]) {
+      return i + 1;
+    }
+  }
+  return 1;
+};
+```
+
+## Best Practices
+
+1. **Always use try-catch** in async route handlers
+2. **Pass errors to next()** for centralized error handling
+3. **Validate all inputs** before processing
+4. **Use services** for business logic, keep controllers thin
+5. **Type everything** with TypeScript
+6. **Use middleware** for cross-cutting concerns
+7. **Return consistent response format** `{ success, data/message }`
+8. **Use HTTP status codes correctly** (200, 201, 400, 401, 404, 500)
+9. **Implement pagination** for list endpoints
+10. **Log errors** for debugging
+11. **Never expose sensitive data** in responses
+12. **Use environment variables** for configuration

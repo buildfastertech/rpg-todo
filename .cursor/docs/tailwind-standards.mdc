@@ -1,0 +1,393 @@
+---
+alwaysApply: false
+---
+
+# TailwindCSS Standards for RPG Todo
+
+## Core Principles
+
+1. **Utility-First** - Use utility classes instead of custom CSS
+2. **Responsive Design** - Mobile-first, use breakpoints
+3. **Consistent Spacing** - Use Tailwind's spacing scale
+4. **Theme Variables** - Use CSS variables for colors
+5. **Dark Mode** - Plan for dark mode support
+
+## Configuration
+
+```javascript
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        // RPG Todo specific colors
+        xp: {
+          bar: "hsl(142, 76%, 36%)",
+          text: "hsl(142, 76%, 96%)",
+        },
+        priority: {
+          low: "hsl(142, 76%, 36%)",
+          medium: "hsl(48, 96%, 53%)",
+          high: "hsl(24, 95%, 53%)",
+          urgent: "hsl(0, 84%, 60%)",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+}
+```
+
+## Common Patterns
+
+### Layout & Spacing
+
+```typescript
+// Container
+<div className="container mx-auto px-4">
+
+// Section spacing
+<section className="py-8 md:py-12 lg:py-16">
+
+// Card spacing
+<div className="p-4 md:p-6 lg:p-8">
+
+// Grid layouts
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+// Flex layouts
+<div className="flex items-center justify-between gap-4">
+<div className="flex flex-col space-y-4">
+```
+
+### Typography
+
+```typescript
+// Headings
+<h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+<h2 className="text-3xl font-semibold tracking-tight">
+<h3 className="text-2xl font-semibold">
+<h4 className="text-xl font-semibold">
+
+// Body text
+<p className="text-base text-muted-foreground">
+<p className="text-sm text-muted-foreground">
+<p className="text-xs text-muted-foreground">
+
+// Truncate long text
+<p className="truncate">
+<p className="line-clamp-2">
+```
+
+### Colors & Backgrounds
+
+```typescript
+// Priority colors (RPG Todo specific)
+<div className="bg-green-500 text-white">Low Priority</div>
+<div className="bg-yellow-500 text-white">Medium Priority</div>
+<div className="bg-orange-500 text-white">High Priority</div>
+<div className="bg-red-500 text-white">Urgent Priority</div>
+
+// Semantic colors
+<div className="bg-primary text-primary-foreground">
+<div className="bg-secondary text-secondary-foreground">
+<div className="bg-destructive text-destructive-foreground">
+<div className="bg-muted text-muted-foreground">
+
+// Gradients
+<div className="bg-gradient-to-r from-purple-600 to-pink-600">
+<div className="bg-gradient-to-br from-primary to-secondary">
+```
+
+### Borders & Shadows
+
+```typescript
+// Borders
+<div className="border border-border rounded-lg">
+<div className="border-2 border-primary">
+<div className="border-b border-border">
+
+// Shadows
+<div className="shadow-sm">
+<div className="shadow-md">
+<div className="shadow-lg">
+<div className="shadow-xl">
+
+// Hover effects
+<div className="hover:shadow-lg transition-shadow">
+<div className="hover:border-primary transition-colors">
+```
+
+### Responsive Design
+
+```typescript
+// Mobile-first approach
+<div className="text-sm md:text-base lg:text-lg">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+<div className="hidden md:block">Desktop only</div>
+<div className="md:hidden">Mobile only</div>
+
+// Breakpoints
+// sm: 640px
+// md: 768px
+// lg: 1024px
+// xl: 1280px
+// 2xl: 1536px
+```
+
+### Interactive States
+
+```typescript
+// Hover
+<button className="hover:bg-primary/90 hover:scale-105">
+
+// Focus
+<input className="focus:ring-2 focus:ring-primary focus:outline-none">
+
+// Active
+<button className="active:scale-95">
+
+// Disabled
+<button className="disabled:opacity-50 disabled:cursor-not-allowed">
+
+// Group hover
+<div className="group">
+  <span className="group-hover:text-primary">Hover parent</span>
+</div>
+```
+
+### Animations & Transitions
+
+```typescript
+// Transitions
+<div className="transition-all duration-300 ease-in-out">
+<div className="transition-colors duration-200">
+<div className="transition-transform duration-300">
+
+// Animations (with tailwindcss-animate)
+<div className="animate-in fade-in slide-in-from-bottom-4">
+<div className="animate-pulse">
+<div className="animate-spin">
+
+// Custom animations
+<div className="animate-bounce">
+<div className="hover:animate-pulse">
+```
+
+## RPG Todo Specific Patterns
+
+### XP Progress Bar
+
+```typescript
+<div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+  <div 
+    className="bg-green-600 h-2.5 rounded-full transition-all duration-500"
+    style={{ width: `${progress}%` }}
+  />
+</div>
+
+// With gradient
+<div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+  <div 
+    className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+    style={{ width: `${progress}%` }}
+  />
+</div>
+```
+
+### Task Card with Priority
+
+```typescript
+// Priority border
+<div className={cn(
+  "rounded-lg border-l-4 p-4",
+  priority === 'Low' && "border-l-green-500",
+  priority === 'Medium' && "border-l-yellow-500",
+  priority === 'High' && "border-l-orange-500",
+  priority === 'Urgent' && "border-l-red-500"
+)}>
+
+// Priority badge
+<span className={cn(
+  "px-2 py-1 rounded-full text-xs font-semibold",
+  priority === 'Low' && "bg-green-500 text-white",
+  priority === 'Medium' && "bg-yellow-500 text-white",
+  priority === 'High' && "bg-orange-500 text-white",
+  priority === 'Urgent' && "bg-red-500 text-white"
+)}>
+  {priority}
+</span>
+```
+
+### Level Display
+
+```typescript
+<div className="flex items-center space-x-2">
+  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-white font-bold">
+    {level}
+  </div>
+  <div>
+    <p className="text-sm font-medium">Level {level}</p>
+    <p className="text-xs text-muted-foreground">{xp} XP</p>
+  </div>
+</div>
+```
+
+### Achievement Card
+
+```typescript
+// Locked achievement
+<div className="rounded-lg border border-border bg-muted/50 p-4 opacity-60 grayscale">
+  {/* Content */}
+</div>
+
+// Unlocked achievement
+<div className="rounded-lg border-2 border-yellow-500 bg-gradient-to-br from-yellow-50 to-orange-50 p-4 shadow-lg">
+  <div className="flex items-center space-x-2">
+    <span className="text-2xl">🏆</span>
+    <h3 className="font-bold">Achievement Unlocked!</h3>
+  </div>
+</div>
+```
+
+### Header/Navigation
+
+```typescript
+<header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <div className="container flex h-14 items-center">
+    <div className="flex flex-1 items-center justify-between">
+      {/* Logo */}
+      <div className="flex items-center space-x-2">
+        <span className="font-bold text-xl">RPG Todo</span>
+      </div>
+      
+      {/* XP Bar */}
+      <div className="hidden md:flex flex-1 max-w-xs mx-4">
+        {/* XP progress */}
+      </div>
+      
+      {/* User menu */}
+      <nav className="flex items-center space-x-4">
+        {/* Navigation items */}
+      </nav>
+    </div>
+  </div>
+</header>
+```
+
+### Loading States
+
+```typescript
+// Skeleton loader
+<div className="animate-pulse space-y-4">
+  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+</div>
+
+// Spinner
+<div className="flex items-center justify-center">
+  <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-primary"></div>
+</div>
+```
+
+## Utility Functions
+
+Use `cn()` helper for conditional classes:
+
+```typescript
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Usage
+<div className={cn(
+  "base-classes",
+  condition && "conditional-classes",
+  anotherCondition ? "true-classes" : "false-classes"
+)}>
+```
+
+## Best Practices
+
+1. **Use spacing scale** - Don't use arbitrary values like `mt-[17px]`
+2. **Mobile-first** - Start with mobile, add `md:` and `lg:` breakpoints
+3. **Consistent colors** - Use theme colors, not arbitrary values
+4. **Group related utilities** - layout, spacing, colors, typography
+5. **Use `cn()` helper** - For conditional classes
+6. **Avoid `!important`** - Use proper specificity instead
+7. **Extract components** - If pattern repeats, make a component
+8. **Use CSS variables** - For dynamic values like progress bars
+9. **Semantic naming** - Use descriptive class names in components
+10. **Dark mode ready** - Use `dark:` prefix for dark mode styles
+
+## Common Pitfalls
+
+❌ **Don't**: Use arbitrary values excessively
+```typescript
+<div className="mt-[13px] w-[247px]">
+```
+
+✅ **Do**: Use Tailwind's spacing scale
+```typescript
+<div className="mt-3 w-64">
+```
+
+❌ **Don't**: Inline complex styles
+```typescript
+<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-black/50">
+```
+
+✅ **Do**: Extract to a component
+```typescript
+<CenteredOverlay>
+  {content}
+</CenteredOverlay>
+```
