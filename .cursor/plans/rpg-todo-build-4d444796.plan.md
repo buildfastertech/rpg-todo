@@ -544,9 +544,9 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Implement security measures - bcrypt for password hashing
 - [x] Implement user registration and authentication system with ledger-based XP rewards (POST /api/auth/register, /api/auth/login, /api/auth/logout)
 - [x] Create Postman collection and environment files for API testing
-- [ ] Build profile display and editing functionality (GET /api/users/profile, PUT /api/users/profile, GET /api/users/stats, GET /api/users/xp-history)
-- [ ] Build core UI structure with Shadcn/TailwindCSS (Header, layout, navigation, design system)
+- [x] Build profile display and editing functionality (GET /api/users/profile, PUT /api/users/profile, GET /api/users/stats, GET /api/users/xp-history)
 - [ ] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks)
+- [ ] Build core UI structure with Shadcn/TailwindCSS (Header, layout, navigation, design system)
 - [ ] Build task creation form with validation and task-based labels (multiple labels per task)
 - [ ] Implement task list display with sorting, filtering, color-coding, pagination, and label display
 - [ ] Build task edit, delete, complete, and archive functionality with ledger-based XP rewards
