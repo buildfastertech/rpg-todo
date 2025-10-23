@@ -1,0 +1,448 @@
+---
+alwaysApply: false
+---
+
+# Shadcn UI Standards for RPG Todo
+
+## Core Principles
+
+1. **Component Installation** - Install components as needed with CLI
+2. **Customization** - Components are yours to modify
+3. **Accessibility** - Built-in ARIA support, maintain it
+4. **Composition** - Combine components for complex UI
+5. **TailwindCSS** - Style with Tailwind utilities
+
+## Installation
+
+```bash
+# Initialize Shadcn UI (first time only)
+npx shadcn-ui@latest init
+
+# Install specific components
+npx shadcn-ui@latest add button
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add dialog
+npx shadcn-ui@latest add form
+npx shadcn-ui@latest add input
+npx shadcn-ui@latest add select
+npx shadcn-ui@latest add toast
+npx shadcn-ui@latest add progress
+npx shadcn-ui@latest add badge
+npx shadcn-ui@latest add dropdown-menu
+npx shadcn-ui@latest add tabs
+npx shadcn-ui@latest add avatar
+npx shadcn-ui@latest add calendar
+```
+
+## Components Needed for RPG Todo
+
+### Button
+```typescript
+import { Button } from '@/components/ui/button';
+
+// Variants: default, destructive, outline, secondary, ghost, link
+<Button variant="default">Complete Task</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="outline">Cancel</Button>
+<Button size="sm">Small Button</Button>
+<Button size="lg">Large Button</Button>
+```
+
+### Card
+```typescript
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
+<Card>
+  <CardHeader>
+    <CardTitle>Task Title</CardTitle>
+    <CardDescription>Due: Tomorrow</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Task description goes here</p>
+  </CardContent>
+  <CardFooter>
+    <Button>Complete</Button>
+  </CardFooter>
+</Card>
+```
+
+### Dialog (Modal)
+```typescript
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>Create Task</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>New Task</DialogTitle>
+      <DialogDescription>
+        Create a new task to earn XP
+      </DialogDescription>
+    </DialogHeader>
+    {/* Form content */}
+    <DialogFooter>
+      <Button type="submit">Save</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+### Form Components
+
+```typescript
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+// Input
+<div className="space-y-2">
+  <Label htmlFor="title">Task Title</Label>
+  <Input 
+    id="title" 
+    placeholder="Enter task title" 
+    value={title}
+    onChange={(e) => setTitle(e.target.value)}
+  />
+</div>
+
+// Textarea
+<div className="space-y-2">
+  <Label htmlFor="description">Description</Label>
+  <Textarea 
+    id="description" 
+    placeholder="Task description" 
+    rows={4}
+  />
+</div>
+
+// Select
+<div className="space-y-2">
+  <Label>Priority</Label>
+  <Select value={priority} onValueChange={setPriority}>
+    <SelectTrigger>
+      <SelectValue placeholder="Select priority" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="Low">Low (10 XP)</SelectItem>
+      <SelectItem value="Medium">Medium (25 XP)</SelectItem>
+      <SelectItem value="High">High (50 XP)</SelectItem>
+      <SelectItem value="Urgent">Urgent (75 XP)</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+```
+
+### Toast Notifications
+
+```typescript
+import { useToast } from '@/components/ui/use-toast';
+import { Toaster } from '@/components/ui/toaster';
+
+// Add Toaster to root layout
+function RootLayout() {
+  return (
+    <>
+      {children}
+      <Toaster />
+    </>
+  );
+}
+
+// Use in components
+function TaskComplete() {
+  const { toast } = useToast();
+
+  const handleComplete = () => {
+    toast({
+      title: "Task Completed!",
+      description: "You earned 50 XP",
+    });
+  };
+
+  // Success toast
+  toast({
+    title: "Achievement Unlocked!",
+    description: "Novice - Complete 10 tasks",
+    variant: "default",
+  });
+
+  // Error toast
+  toast({
+    title: "Error",
+    description: "Failed to save task",
+    variant: "destructive",
+  });
+}
+```
+
+### Progress Bar (XP)
+
+```typescript
+import { Progress } from '@/components/ui/progress';
+
+<div className="space-y-2">
+  <div className="flex justify-between text-sm">
+    <span>Level {level}</span>
+    <span>{currentXP} / {nextLevelXP} XP</span>
+  </div>
+  <Progress value={(currentXP / nextLevelXP) * 100} />
+</div>
+```
+
+### Badge (Priority Tags)
+
+```typescript
+import { Badge } from '@/components/ui/badge';
+
+// Variants: default, secondary, destructive, outline
+<Badge variant="default">Low Priority</Badge>
+<Badge variant="secondary">Medium</Badge>
+<Badge variant="destructive">Urgent</Badge>
+<Badge className="bg-orange-500">High</Badge>
+```
+
+### Dropdown Menu
+
+```typescript
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost">Actions</Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuLabel>Task Actions</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem onClick={handleComplete}>
+      Complete
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={handleEdit}>
+      Edit
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={handleArchive}>
+      Archive
+    </DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem 
+      onClick={handleDelete}
+      className="text-red-600"
+    >
+      Delete
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+### Tabs (Profile/Achievements)
+
+```typescript
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs';
+
+<Tabs defaultValue="profile" className="w-full">
+  <TabsList>
+    <TabsTrigger value="profile">Profile</TabsTrigger>
+    <TabsTrigger value="stats">Stats</TabsTrigger>
+    <TabsTrigger value="achievements">Achievements</TabsTrigger>
+  </TabsList>
+  <TabsContent value="profile">
+    {/* Profile content */}
+  </TabsContent>
+  <TabsContent value="stats">
+    {/* Stats content */}
+  </TabsContent>
+  <TabsContent value="achievements">
+    {/* Achievements content */}
+  </TabsContent>
+</Tabs>
+```
+
+### Avatar
+
+```typescript
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
+
+<Avatar>
+  <AvatarImage src={user.avatarUrl} alt={user.username} />
+  <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+</Avatar>
+```
+
+### Calendar (Date Picker)
+
+```typescript
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+
+const [date, setDate] = useState<Date>();
+
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline">
+      <CalendarIcon className="mr-2 h-4 w-4" />
+      {date ? format(date, 'PPP') : 'Pick a date'}
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent className="w-auto p-0">
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      initialFocus
+    />
+  </PopoverContent>
+</Popover>
+```
+
+## Common Patterns for RPG Todo
+
+### Task Card Component
+
+```typescript
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
+interface TaskCardProps {
+  task: Task;
+  onComplete: () => void;
+}
+
+export const TaskCard: FC<TaskCardProps> = ({ task, onComplete }) => {
+  const priorityColor = {
+    Low: 'bg-green-500',
+    Medium: 'bg-yellow-500',
+    High: 'bg-orange-500',
+    Urgent: 'bg-red-500',
+  }[task.priority];
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <CardTitle>{task.title}</CardTitle>
+          <Badge className={priorityColor}>{task.priority}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">{task.description}</p>
+        <div className="flex items-center justify-between">
+          <span className="text-sm">XP: {task.xpValue}</span>
+          <Button onClick={onComplete}>Complete</Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+```
+
+### Achievement Card
+
+```typescript
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+
+export const AchievementCard: FC<{ achievement: Achievement }> = ({ achievement }) => {
+  const isUnlocked = achievement.unlockedDate !== null;
+  const progress = (achievement.current / achievement.required) * 100;
+
+  return (
+    <Card className={isUnlocked ? 'border-yellow-500' : ''}>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <CardTitle>{achievement.name}</CardTitle>
+          {isUnlocked && <Badge variant="default">Unlocked</Badge>}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-sm text-muted-foreground">{achievement.description}</p>
+        {!isUnlocked && (
+          <>
+            <Progress value={progress} />
+            <p className="text-xs text-muted-foreground">
+              {achievement.current} / {achievement.required}
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+```
+
+## Customization
+
+Components live in your project and can be customized:
+
+```typescript
+// components/ui/button.tsx - Add custom variant
+const buttonVariants = cva(
+  "inline-flex items-center justify-center...",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground...",
+        destructive: "bg-destructive text-destructive-foreground...",
+        // Add custom variant for RPG theme
+        epic: "bg-gradient-to-r from-purple-600 to-pink-600 text-white...",
+      },
+      // ...
+    },
+  }
+);
+```
+
+## Best Practices
+
+1. **Always use asChild** when wrapping components with triggers
+2. **Maintain accessibility** - keep ARIA labels
+3. **Customize colors** via TailwindCSS classes
+4. **Combine components** for complex UI
+5. **Use variants** for different styles
+6. **Import only what you need** for better tree-shaking
+7. **Keep toast messages concise** and actionable
+8. **Test keyboard navigation** for accessibility
+9. **Use semantic HTML** with Shadcn components
+10. **Consistent spacing** with Tailwind utilities
