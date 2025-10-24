@@ -545,13 +545,13 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Implement user registration and authentication system with ledger-based XP rewards (POST /api/auth/register, /api/auth/login, /api/auth/logout)
 - [x] Create Postman collection and environment files for API testing
 - [x] Build profile display and editing functionality (GET /api/users/profile, PUT /api/users/profile, GET /api/users/stats, GET /api/users/xp-history)
-- [ ] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks)
+- [x] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks) with ledger-based XP rewards
+- [x] Build achievement routes (GET /api/achievements, GET /api/achievements/user, GET /api/achievements/progress, POST /api/achievements/check)
+- [x] Implement achievement tracking system using achievement_user join table (auto-check on task completion)
 - [ ] Build core UI structure with Shadcn/TailwindCSS (Header, layout, navigation, design system)
 - [ ] Build task creation form with validation and task-based labels (multiple labels per task)
 - [ ] Implement task list display with sorting, filtering, color-coding, pagination, and label display
 - [ ] Build task edit, delete, complete, and archive functionality with ledger-based XP rewards
-- [ ] Build achievement routes (GET /api/achievements, GET /api/achievements/user)
-- [ ] Implement achievement tracking system using achievement_user join table
 - [ ] Build achievements section with progress bars and unlock notifications
 - [ ] Implement GDPR consent flow
 - [ ] Add Terms of Service and Privacy Policy links in Settings

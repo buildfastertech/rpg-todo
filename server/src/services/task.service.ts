@@ -267,6 +267,10 @@ export const taskService = {
     // Get updated task
     const updatedTask = await this.getTaskById(taskId, userId);
 
+    // Check for new achievements (import at top of file)
+    const { achievementService } = await import('./achievement.service');
+    await achievementService.checkAndAwardAchievements(userId);
+
     return {
       task: updatedTask,
       xpAwarded: task.xpValue,

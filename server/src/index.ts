@@ -5,6 +5,7 @@ import config from './config/env';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import taskRoutes from './routes/task.routes';
+import achievementRoutes from './routes/achievement.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app: Application = express();
@@ -31,7 +32,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
-// app.use('/api/achievements', achievementRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
