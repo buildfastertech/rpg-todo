@@ -537,6 +537,7 @@ This ensures LLM agents have proper context without loading all documentation un
 
 ### To-dos
 
+**Backend (Complete):**
 - [x] Create MDC files for framework standards (react, express, shadcn, tailwind, supabase) and framework glossary
 - [x] Create Supabase database schema (6 tables: Users, Tasks, Achievements, Achievement_User, Custom_Labels, Points_Ledger with proper indexes and RLS)
 - [x] Create database functions (get_user_total_xp, calculate_level_from_xp, award_xp, get_completed_task_count, get_urgent_tasks_this_week)
@@ -548,10 +549,26 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks) with ledger-based XP rewards
 - [x] Build achievement routes (GET /api/achievements, GET /api/achievements/user, GET /api/achievements/progress, POST /api/achievements/check)
 - [x] Implement achievement tracking system using achievement_user join table (auto-check on task completion)
-- [ ] Build core UI structure with Shadcn/TailwindCSS (Header, layout, navigation, design system)
-- [ ] Build task creation form with validation and task-based labels (multiple labels per task)
-- [ ] Implement task list display with sorting, filtering, color-coding, pagination, and label display
-- [ ] Build task edit, delete, complete, and archive functionality with ledger-based XP rewards
-- [ ] Build achievements section with progress bars and unlock notifications
-- [ ] Implement GDPR consent flow
-- [ ] Add Terms of Service and Privacy Policy links in Settings
+
+**Frontend (In Progress):**
+- [x] Initialize React app with Vite + TypeScript
+- [x] Configure TailwindCSS and install Shadcn UI components
+- [x] Install additional dependencies (React Router, Axios, date-fns, lucide-react, sonner)
+- [x] Set up project structure (types, services, contexts, components)
+- [x] Create API service layer for backend communication
+- [x] Create TypeScript types for all entities
+- [x] Create auth context and auth service
+- [ ] Set up React Router for navigation
+- [ ] Build authentication pages (Login, Register)
+- [ ] Implement protected routes
+- [ ] Build main layout with Header component (level, XP, progress bar)
+- [ ] Build Dashboard page with task overview
+- [ ] Build task creation/edit form with custom labels
+- [ ] Build task list with filtering, sorting, and pagination
+- [ ] Build task card component with priority color-coding
+- [ ] Implement task actions (complete, edit, delete, archive)
+- [ ] Build Profile page with stats and XP history
+- [ ] Build Achievements page with progress bars and unlock notifications
+- [ ] Build Settings page with GDPR consent and legal links
+- [ ] Add loading states and error handling throughout
+- [ ] Test responsive design on mobile/tablet/desktop
