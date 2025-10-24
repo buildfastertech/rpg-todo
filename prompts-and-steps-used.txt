@@ -1,0 +1,132 @@
+Steps
+===========
+
+- Open Spotify
+- Create detailed PRD including user stories, feature groups and dependencies using my own custom software "Conntext(https://conntext.app)"
+- Set up empty project in Cursor
+- Add PRD into .cursor folder
+- Turn on Plan mode
+- Prompt "Please use my prd @rpg-todo-prd-2025-10-23.md to create a plan for the build. Split out all features by feature group and create a separate task list for each of them. Only utilise the user stories that are marked as "**Question Status:** answered" and be sure to organise the order of feature groups by the potential dependencied sections to ensure that dependant features have their related features built first."
+- Fine tune plan to include project setup documentation and standards with prompt "Please use context7 to create a series of mdc files for some coding standards for each framework being used. Make all of these files alwaysApply false and make a glossary file with alwaysApply: true that will help llm agents route to the correct docuemnts based upon the prompt to avoid wasting context."
+- Create monorepo file structure for server and client
+- Update build plan for monorepo structure with prompt "- Can you reorder the current build plan and be sure to include the "Project Setup & Documentation" as a task"
+- Prompt "You didn't add a to-do for the Project Setup & Documentation so can you add that, please? update all to-dos to be in the correct order."
+- Prompt "update the plan to make sure that client code is separate to server code in their respective folders "client" and "server""
+- Validate build plan
+- Create GitHub repo
+- Init GitHub into the project
+- Switch to agent mode
+- Create GitHub README with prompt "Create a readme for github using the current plan to state frameworks etc in preparation for fleshing it out later"
+- Commit
+- Create Supabase project
+- Add .env-example files to project
+- Add .env files to project
+- Add Supabase variables to .env
+- Create new "documentation" branch
+- Commit
+- Prompt "Ok, let's build this. What is the first phase?"
+- Validate documentation
+- Manually update database schema in dbdiagram
+- Prompt "Please update the build plan and any documentation files related to the database with my updated version found under "DBML Schema" in @database-schema.dbml.md"
+- Validate changes
+- Prompt "Can you update the build plan too?"
+- Commit and create PR
+- Merge into main
+- Create build-database-schema-functions branch
+- Prompt "Ok, let's confirm what the next phase is please"
+- Prompt "Let's start creating the Supabase database schema SQL"
+- Import supabase-schema.sql into Supabase to create the table structure
+- Prompt "set up the Supabase connection configuration in the Express backend"
+- cd server
+- npm install
+- npm run dev
+- Fix run errors
+- Prompt "I already have a .env set up with SUPABASE_URL and SUPABASE_KEY so can you update env.ts to utilise that .env?"
+- Commit
+- Prompt "proceed with creating the authentication routes and controllers"
+- Prompt "Create me a postman collection with environment file for ease of use"
+- Import collection into postman
+- Test the api health endpoint and registration of an account
+- Validate the data within Supabase
+- Prompt "Ok, let's check what the next task is"
+- Prompt "Update the plan as to where we are right now as this seems to have been missed"
+- Prompt "Ok, let's continue with the user profile routes"
+- Test in Postman
+- Commit
+- Prompt "update the build plan and then move on to task management routes"
+- Test in Postman
+- Commit
+- Prompt "create the achievement routes"
+- Test in Postman
+- Commit
+- Backend completed (auth, profile, task management inc xp rewarding, achievement management and rewarding)
+- Prompt "Ok, let's update the build plan and get started on the frontend making sure to use context7 for shadcn etc."
+- Review and Approve/Decline run commands (react/shadcn/tailwind etc)
+- cd client
+- npm install
+- npm run dev
+- Validate home page works
+- Commit
+- Prompt "continue with the routing and authentication pages"
+- Validate auth pages
+- Fix UI issues with prompt "The CTA on auth forms has no top margin so the final field is touching the top of the button. All CTA buttons must have a cursor on hover and password fields must have a toggle password icon."
+- Fix more UI issues with prompt and screenshot of the header from main page after login "The current page button is difficult to read and the progress section inside the header seems wshed out so please jazz that up. The heading on all pages being black doesn't suit the purple gradient background so work on the contrast please"
+- Fix more UI issues with prompt "The track of the progress bar is washed out against the purple. The progress container needs more work with less gradient to be cleaner on the header."
+- Fix more UI issues with prompt "Let's make the progress container in the header background dark and update all elements within to be at the best contrast. Let's also set the border to be either 2px or a more complimentary colour to better blend in"
+- Fix more UI issues with prompt "Let's set the border to be 2px on the header progress container"
+- Fix more UI issues with prompt "Let's remove the gradient main background and use a complimentary background colour as the content will get quite messy otherwise"
+- Fix more UI issues with prompt "Let's add a light/dark mode switcher and update all current classes to utilise this"
+- Fix more UI issues with prompt "The main background doesn't update when selecting light/dark mode and the auth pages still have the gradient background that we do not want."
+- Fix more UI Issues with prompt "The bottom border of the header in light mode is too harsh and the shadow effect ion the progress container within the header should be removed."
+- Commit
+- Prompt " Ok, what's next?"
+- Prompt "Start with the task list and card display"
+- Validate changes
+- Fix error with prompt "Error: Uncaught TypeError: Cannot read properties of undefined (reading 'filter') at TaskList (TaskList.tsx:117:31)"
+- Fix secondary error with prompt "Error: TaskList.tsx:222 Uncaught TypeError: Cannot read properties of undefined (reading 'length') at TaskList (TaskList.tsx:222:36)"
+- Validate page as working
+- Prompt "Ok, continue"
+- Validate changes and test create task form
+- Fix issue with prompt "After adding a task using the modal, I can see the entry in the database but the task does not appear in my list on the frontend"
+- Follow up prompt "Still doesn't show. I can verify that the data is correct in the database including my users uuid"
+- Follow up prompt "Error: react-dom_client.js?v=1cbee104:4598 Uncaught Error: Objects are not valid as a React child (found: object with keys {id, label_name}). If you meant to render a collection of children, use an array instead."
+- Follow up prompt "Completing a task doesn't refresh the progress container in the header"
+- Follow up prompt "The progress bar within the progress container in the header is always empty regardless of current progress and the progress values seem wrong as I am now on level 2 but my progress towards the next level says 157/100 as I have a total of 157 points"
+- Follow up prompt "Finally, in dark mode, can the background colour be a tint of neutral as the blue washes out the other neutral elements"
+- Commit
+- Prompt "Ok, what's next?"
+- Prompt "build the Profile page with stats and XP history"
+- Follow up prompt "Error: Uncaught TypeError: Cannot read properties of undefined (reading 'length') at ProfilePage (ProfilePage.tsx:352:24) which is similar to previous errors for the task management. Since this may continue on future pages can you update the relevant documentation to make sure that subsequent pages already take into account the fix for this?"
+- Follow up prompt "On loading the page I get a toast containing "Cannot read properties of undefined (reading 'username')" and the profile information section has no data inside for username, email or member since. The XP history section also has no entries."
+- Follow up prompt "Great. The profile information is now populated, howvever, the design needs to be more considered and labels/values the same font sizes"
+- Follow up prompt "Great, let's now remove the console logging."
+- Commit
+- Prompt "Ok, what's next?"
+- Prompt "build the Achievements page with progress bars and unlock notifications"
+- Follow up prompt "Error: Uncaught TypeError: achievementsWithProgress.filter is not a function at AchievementsPage (AchievementsPage.tsx:56:50)"
+- Follow up prompt "Error: AchievementsPage.tsx:61 Uncaught TypeError: achievementsWithProgress.filter is not a function at AchievementsPage (AchievementsPage.tsx:61:32)"
+- Follow up prompt "Error: Uncaught TypeError: (achievementsWithProgress || []).filter is not a function at AchievementsPage (AchievementsPage.tsx:60:58) - Can you check the remaining of the page before confirming the fix to snure no repeated reports"
+- Follow up prompt "The progress towards the unlocking of the achievements is not updating. For instance, reach level 5 still says 0 / 5 but I am actually level 2"
+- Test earning an achievement
+- Follow up prompt "QOL improvements. I would like to see a toast message when I earn an achievement. Error in console when I click inside the description field when creating a task with grm ERROR [RenderWithStyles] ░░ Couldn't load style link [href: chrome-extension://kbfnbcaeplbcioakkpcpgfkobkghlhen/src/css/g2External.styles.css] t {_reactName: 'onError', _targetInst: null, type: 'error', nativeEvent: Event, target: link, …} which appears to be a grammarly issue so may not be solvable here"
+- Follow up prompt "Due date should be nullable"
+- Follow up prompt "(index):33 Failed to save task: TypeError: Cannot read properties of undefined (reading 'toISOString') at onSubmit (TaskFormDialog.tsx:150:33)"
+- Follow up prompt "Failed to create task: null value in column "due_date" of relation "tasks" violates not-null constraint - The table on supabase must be set to not nullable"
+- Follow up prompt "QOL Improvement: Unlocked achievements should be green not yellow"
+- Follow up prompt "The dark mode state for unlocked achievements is too dark. I'd like it more vibrant"
+- Commit
+- Prompt "Ok, what's next?"
+- Prompt "build the Settings page"
+- Follow up prompt "Remove the notifications settings and the privacy & data section. In order to keep danger zone, we need a new endpoint that will delete the account when confirmed. Let's wire that up"
+- Follow up prompt "Update the postman collection, please"
+- Prompt "Ok, what's next?"
+- Prompt "Add loading states and error handling throughout"
+- Test loading indicators
+- Done
+- Commit
+- Set up projects on Vercel
+- Attempt deployment of client
+- Attempt deployment of server
+- Fix server build errors (should have ran npm run build locally first :facepalm:)
+- Attempt deployment of server
+- Deployed
