@@ -66,7 +66,7 @@ export interface Task {
   userId: string;
   title: string;
   description?: string;
-  dueDate: string;
+  dueDate?: string;
   status: TaskStatus;
   priority: TaskPriority;
   xpValue: number;
@@ -79,7 +79,7 @@ export interface Task {
 export interface CreateTaskData {
   title: string;
   description?: string;
-  dueDate: string;
+  dueDate?: string;
   priority: TaskPriority;
   category?: string;
   labels?: string[];
@@ -110,6 +110,7 @@ export interface CompleteTaskResponse {
   newTotalXp: number;
   newLevel: number;
   leveledUp: boolean;
+  newAchievements?: Achievement[];
 }
 
 // Achievement types
@@ -131,6 +132,17 @@ export interface AchievementProgress extends Achievement {
   isUnlocked: boolean;
   unlockedAt: string | null;
   progress?: number;
+  required?: number;
+}
+
+export interface AchievementWithProgress {
+  id: string;
+  achievementName: string;
+  achievementDescription: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+  progress?: number;
+  current?: number;
   required?: number;
 }
 

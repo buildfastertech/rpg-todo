@@ -17,7 +17,9 @@ export const createTaskSchema = z.object({
     .max(1000, 'Description must be less than 1000 characters')
     .optional(),
   dueDate: z.string()
-    .datetime('Invalid date format'),
+    .datetime('Invalid date format')
+    .optional()
+    .nullable(),
   priority: TaskPriority,
   category: z.string()
     .max(50, 'Category must be less than 50 characters')
@@ -39,7 +41,8 @@ export const updateTaskSchema = z.object({
     .nullable(),
   dueDate: z.string()
     .datetime('Invalid date format')
-    .optional(),
+    .optional()
+    .nullable(),
   priority: TaskPriority.optional(),
   category: z.string()
     .max(50, 'Category must be less than 50 characters')

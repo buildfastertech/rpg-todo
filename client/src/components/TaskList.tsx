@@ -62,6 +62,16 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
         duration: 5000,
       });
 
+      // Show achievement unlock notifications
+      if (result.newAchievements && result.newAchievements.length > 0) {
+        result.newAchievements.forEach((achievement) => {
+          toast.success(`🏆 Achievement Unlocked!`, {
+            description: achievement.achievementName,
+            duration: 6000,
+          });
+        });
+      }
+
       // Reload tasks
       loadTasks();
       

@@ -269,7 +269,7 @@ export const taskService = {
 
     // Check for new achievements (import at top of file)
     const { achievementService } = await import('./achievement.service');
-    await achievementService.checkAndAwardAchievements(userId);
+    const newAchievements = await achievementService.checkAndAwardAchievements(userId);
 
     return {
       task: updatedTask,
@@ -277,6 +277,7 @@ export const taskService = {
       newTotalXp: xpData.new_total_xp,
       newLevel: xpData.new_level,
       leveledUp: xpData.leveled_up,
+      newAchievements: newAchievements,
     };
   },
 

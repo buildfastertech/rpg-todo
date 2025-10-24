@@ -27,7 +27,7 @@ const priorityColors = {
 };
 
 export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive }: TaskCardProps) {
-  const isOverdue = new Date(task.dueDate) < new Date() && task.status === 'open';
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status === 'open';
   const priorityColor = priorityColors[task.priority];
 
   return (
@@ -109,13 +109,15 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
           </Badge>
 
           {/* Due date */}
-          <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-600 dark:text-slate-400'}`}>
-            <Calendar className="h-3.5 w-3.5" />
-            <span className="text-xs">
-              {format(new Date(task.dueDate), 'MMM d, yyyy')}
-              {isOverdue && ' (Overdue)'}
-            </span>
-          </div>
+          {task.dueDate && (
+            <div className={`flex items-center gap-1.5 ${isOverdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-600 dark:text-slate-400'}`}>
+              <Calendar className="h-3.5 w-3.5" />
+              <span className="text-xs">
+                {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                {isOverdue && ' (Overdue)'}
+              </span>
+            </div>
+          )}
 
           {/* Category */}
           {task.category && (

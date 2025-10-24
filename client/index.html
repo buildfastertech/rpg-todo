@@ -9,5 +9,31 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Suppress browser extension errors (e.g., Grammarly) - must run after React loads
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        const errorMessage = args[0]?.toString() || '';
+        // Suppress Grammarly and other extension-related errors
+        if (
+          errorMessage.includes('chrome-extension://') ||
+          errorMessage.includes('Grammarly') ||
+          errorMessage.includes('grm ERROR') ||
+          errorMessage.includes('RenderWithStyles')
+        ) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+      
+      // Also suppress error events from extensions
+      window.addEventListener('error', function(e) {
+        if (e.target && e.target.tagName === 'LINK' && e.target.href && e.target.href.includes('chrome-extension://')) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      }, true);
+    </script>
   </body>
 </html>

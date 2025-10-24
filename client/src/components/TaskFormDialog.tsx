@@ -41,7 +41,7 @@ import type { Task, TaskPriority } from '@/types';
 const taskFormSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional(),
-  dueDate: z.date({ required_error: 'Due date is required' }),
+  dueDate: z.date().optional(),
   priority: z.enum(['Low', 'Medium', 'High', 'Urgent'], {
     required_error: 'Priority is required',
   }),
@@ -85,15 +85,20 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
       form.reset({
         title: task.title,
         description: task.description || '',
-        dueDate: new Date(task.dueDate),
+        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         priority: task.priority,
         category: task.category || '',
       });
-      setLabels(task.labels || []);
+      // Extract labels from task
+      const taskLabels = (task.labels || []).map((label) =>
+        typeof label === 'string' ? label : label.label_name
+      );
+      setLabels(taskLabels);
     } else {
       form.reset({
         title: '',
         description: '',
+        dueDate: undefined,
         priority: 'Medium',
         category: '',
       });
@@ -132,7 +137,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         await taskService.updateTask(task.id, {
           title: data.title,
           description: data.description,
-          dueDate: data.dueDate.toISOString(),
+          dueDate: data.dueDate ? data.dueDate.toISOString() : undefined,
           priority: data.priority,
           category: data.category,
         });
@@ -142,7 +147,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         await taskService.createTask({
           title: data.title,
           description: data.description,
-          dueDate: data.dueDate.toISOString(),
+          dueDate: data.dueDate ? data.dueDate.toISOString() : undefined,
           priority: data.priority,
           category: data.category,
           labels: labels.length > 0 ? labels : undefined,
