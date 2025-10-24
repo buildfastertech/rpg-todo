@@ -1,5 +1,5 @@
 import supabase from '../config/supabase';
-import { BadRequestError, NotFoundError } from '../utils/errors.util';
+import { BadRequestError } from '../utils/errors.util';
 
 interface Achievement {
   id: string;
@@ -32,7 +32,7 @@ export const achievementService = {
       throw new BadRequestError(`Failed to fetch achievements: ${error.message}`);
     }
 
-    return (data || []).map((a) => ({
+    return (data || []).map((a: any) => ({
       id: a.id,
       achievementName: a.achievement_name,
       achievementDescription: a.achievement_description,

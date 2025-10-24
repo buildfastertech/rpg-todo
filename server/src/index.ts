@@ -35,7 +35,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/achievements', achievementRoutes);
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
