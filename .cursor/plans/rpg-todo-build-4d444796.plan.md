@@ -558,10 +558,11 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Create API service layer for backend communication
 - [x] Create TypeScript types for all entities
 - [x] Create auth context and auth service
-- [ ] Set up React Router for navigation
-- [ ] Build authentication pages (Login, Register)
-- [ ] Implement protected routes
-- [ ] Build main layout with Header component (level, XP, progress bar)
+- [x] Set up React Router for navigation
+- [x] Build authentication pages (Login, Register)
+- [x] Implement protected routes
+- [x] Build main layout with Header component (level, XP, progress bar)
+- [x] Create placeholder pages (Dashboard, Profile, Achievements, Settings)
 - [ ] Build Dashboard page with task overview
 - [ ] Build task creation/edit form with custom labels
 - [ ] Build task list with filtering, sorting, and pagination
