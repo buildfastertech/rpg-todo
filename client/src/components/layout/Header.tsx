@@ -17,7 +17,11 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Swords, User, Trophy, Settings, LogOut, Home, Menu } from 'lucide-react';
 import type { UserStats } from '@/types';
 
-export default function Header() {
+interface HeaderProps {
+  refreshTrigger?: number;
+}
+
+export default function Header({ refreshTrigger }: HeaderProps) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -26,7 +30,7 @@ export default function Header() {
 
   useEffect(() => {
     loadStats();
-  }, []);
+  }, [refreshTrigger]);
 
   const loadStats = async () => {
     try {
@@ -43,15 +47,49 @@ export default function Header() {
     if (!stats) {
       return 0;
     }
-    const currentLevelXP = stats.totalXp;
-    const nextLevelXP = stats.xpForNextLevel;
     
-    // Calculate XP needed for current level (simplified)
-    const previousLevelXP = Math.floor(nextLevelXP * 0.6); // Approximate
-    const currentProgress = currentLevelXP - previousLevelXP;
-    const levelRange = nextLevelXP - previousLevelXP;
+    // Level thresholds (matches backend)
+    const levelThresholds = [
+      0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 14500,
+      18500, 23000, 28000, 33500, 39500, 46000, 53000, 60500, 68500,
+      77000, 86000, 95500, 105500, 116000, 127000, 138500, 150500, 163000, 176000,
+    ];
     
-    return Math.min(Math.max((currentProgress / levelRange) * 100, 0), 100);
+    const currentLevel = stats.level;
+    const totalXp = stats.totalXp;
+    const currentLevelThreshold = levelThresholds[currentLevel - 1] || 0;
+    const nextLevelThreshold = levelThresholds[currentLevel] || 999999;
+    
+    const xpInCurrentLevel = totalXp - currentLevelThreshold;
+    const xpNeededForLevel = nextLevelThreshold - currentLevelThreshold;
+    
+    const progress = (xpInCurrentLevel / xpNeededForLevel) * 100;
+    return Math.min(Math.max(progress, 0), 100);
+  };
+  
+  const getXPDisplayText = () => {
+    if (!stats) {
+      return { current: 0, needed: 100 };
+    }
+    
+    const levelThresholds = [
+      0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 14500,
+      18500, 23000, 28000, 33500, 39500, 46000, 53000, 60500, 68500,
+      77000, 86000, 95500, 105500, 116000, 127000, 138500, 150500, 163000, 176000,
+    ];
+    
+    const currentLevel = stats.level;
+    const totalXp = stats.totalXp;
+    const currentLevelThreshold = levelThresholds[currentLevel - 1] || 0;
+    const nextLevelThreshold = levelThresholds[currentLevel] || 999999;
+    
+    const xpInCurrentLevel = totalXp - currentLevelThreshold;
+    const xpNeededForLevel = nextLevelThreshold - currentLevelThreshold;
+    
+    return {
+      current: xpInCurrentLevel,
+      needed: xpNeededForLevel,
+    };
   };
 
   const handleLogout = async () => {
@@ -66,7 +104,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/50 backdrop-blur-sm">
+    <header className="border-b border-slate-200 bg-slate-50 dark:border-neutral-800 dark:bg-neutral-950/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
@@ -99,7 +137,7 @@ export default function Header() {
 
           {/* XP and Level Display */}
           <div className="hidden items-center space-x-4 lg:flex">
-            <Card className="border-2 border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950/95 p-3 backdrop-blur-sm">
+            <Card className="border-2 border-slate-300 bg-white dark:border-neutral-700 dark:bg-neutral-950/95 p-3 backdrop-blur-sm">
               <div className="flex items-center space-x-4">
                 <div className="text-center">
                   <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Level</p>
@@ -111,10 +149,10 @@ export default function Header() {
                   <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-100">
                     <span>XP Progress</span>
                     <span className="text-purple-600 dark:text-purple-400">
-                      {isLoading ? '-' : `${stats?.totalXp || 0} / ${stats?.xpForNextLevel || 100}`}
+                      {isLoading ? '-' : `${getXPDisplayText().current} / ${getXPDisplayText().needed}`}
                     </span>
                   </div>
-                  <Progress value={calculateXPProgress()} className="h-2.5 bg-slate-200 dark:bg-slate-800" />
+                  <Progress value={calculateXPProgress()} className="h-2.5 bg-slate-200 dark:bg-neutral-800" />
                 </div>
               </div>
             </Card>
@@ -160,7 +198,7 @@ export default function Header() {
 
         {/* Mobile XP Display */}
         <div className="mt-4 lg:hidden">
-          <Card className="border-2 border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950/95 p-3 backdrop-blur-sm">
+          <Card className="border-2 border-slate-300 bg-white dark:border-neutral-700 dark:bg-neutral-950/95 p-3 backdrop-blur-sm">
             <div className="flex items-center space-x-4">
               <div className="text-center">
                 <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Level</p>
@@ -172,10 +210,10 @@ export default function Header() {
                 <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-100">
                   <span>XP Progress</span>
                   <span className="text-purple-600 dark:text-purple-400">
-                    {isLoading ? '-' : `${stats?.totalXp || 0} / ${stats?.xpForNextLevel || 100}`}
+                    {isLoading ? '-' : `${getXPDisplayText().current} / ${getXPDisplayText().needed}`}
                   </span>
                 </div>
-                <Progress value={calculateXPProgress()} className="h-2.5 bg-slate-200 dark:bg-slate-800" />
+                <Progress value={calculateXPProgress()} className="h-2.5 bg-slate-200 dark:bg-neutral-800" />
               </div>
             </div>
           </Card>

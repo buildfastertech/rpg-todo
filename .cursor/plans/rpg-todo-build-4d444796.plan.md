@@ -563,11 +563,12 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Implement protected routes
 - [x] Build main layout with Header component (level, XP, progress bar)
 - [x] Create placeholder pages (Dashboard, Profile, Achievements, Settings)
-- [ ] Build Dashboard page with task overview
-- [ ] Build task creation/edit form with custom labels
-- [ ] Build task list with filtering, sorting, and pagination
-- [ ] Build task card component with priority color-coding
-- [ ] Implement task actions (complete, edit, delete, archive)
+- [x] Add light/dark mode theme switcher
+- [x] Build Dashboard page with task overview
+- [x] Build task creation/edit form with custom labels
+- [x] Build task list with filtering, sorting, and pagination
+- [x] Build task card component with priority color-coding
+- [x] Implement task actions (complete, edit, delete, archive)
 - [ ] Build Profile page with stats and XP history
 - [ ] Build Achievements page with progress bars and unlock notifications
 - [ ] Build Settings page with GDPR consent and legal links

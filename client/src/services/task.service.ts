@@ -11,11 +11,27 @@ import type {
 
 export const taskService = {
   async getTasks(filters?: TaskFilters): Promise<PaginatedResponse<Task>> {
-    const response = await apiClient.get<ApiResponse<{ tasks: PaginatedResponse<Task> }>>(
+    const response = await apiClient.get<ApiResponse<{
+      tasks: Task[];
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+    }>>(
       '/tasks',
       { params: filters }
     );
-    return response.data.data.tasks;
+    
+    // Transform backend response to PaginatedResponse format
+    return {
+      items: response.data.data.tasks,
+      total: response.data.data.pagination.total,
+      page: response.data.data.pagination.page,
+      limit: response.data.data.pagination.limit,
+      totalPages: response.data.data.pagination.totalPages,
+    };
   },
 
   async getTaskById(taskId: string): Promise<Task> {

@@ -71,7 +71,7 @@ export interface Task {
   priority: TaskPriority;
   xpValue: number;
   category?: string;
-  labels: string[];
+  labels: Array<string | { id: string; label_name: string }>;
   createdAt: string;
   updatedAt: string;
 }
