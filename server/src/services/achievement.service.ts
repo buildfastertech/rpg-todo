@@ -81,14 +81,7 @@ export const achievementService = {
       .single();
 
     const { data: completedTaskCount } = await supabase
-      .rpc('get_completed_task_count', { p_user_id: userId });
-
-    // Get urgent tasks completed this week
-    const { data: urgentTasksThisWeek } = await supabase
-      .rpc('get_urgent_tasks_this_week', { p_user_id: userId });
-
-    const urgentTasksCount = urgentTasksThisWeek?.length || 0;
-    const hasUrgentTasksOpen = urgentTasksCount > 0;
+      .rpc('get_completed_task_count', { p_user_id: userId } as any);
 
     // Map achievements with progress
     const achievementsWithProgress: AchievementProgress[] = allAchievements.map((achievement) => {
@@ -104,7 +97,8 @@ export const achievementService = {
           progress = completedTaskCount || 0;
           required = achievement.requirementValue || 0;
         } else if (achievement.achievementType === 'level_milestone') {
-          progress = user?.level || 1;
+          const userData: any = user;
+          progress = userData?.level || 1;
           required = achievement.requirementValue || 0;
         } else if (achievement.achievementType === 'special') {
           // Special achievements don't show numeric progress
@@ -136,7 +130,7 @@ export const achievementService = {
       .single();
 
     const { data: completedTaskCount } = await supabase
-      .rpc('get_completed_task_count', { p_user_id: userId });
+      .rpc('get_completed_task_count', { p_user_id: userId } as any);
 
     // Get all achievements
     const allAchievements = await this.getAllAchievements();
@@ -165,7 +159,8 @@ export const achievementService = {
       // Check level milestones
       if (achievement.achievementType === 'level_milestone') {
         const required = achievement.requirementValue || 0;
-        if ((user?.level || 1) >= required) {
+        const userData: any = user;
+        if ((userData?.level || 1) >= required) {
           shouldUnlock = true;
         }
       }
@@ -181,8 +176,9 @@ export const achievementService = {
           .gte('due_date', this.getStartOfWeek())
           .lt('due_date', this.getEndOfWeek());
 
-        if (urgentTasksThisWeek && urgentTasksThisWeek.length > 0) {
-          const allCompleted = urgentTasksThisWeek.every((task) => task.status === 'completed');
+        const urgentData: any = urgentTasksThisWeek;
+        if (urgentData && urgentData.length > 0) {
+          const allCompleted = urgentData.every((task: any) => task.status === 'completed');
           if (allCompleted) {
             shouldUnlock = true;
           }
@@ -196,7 +192,7 @@ export const achievementService = {
           .insert({
             user_id: userId,
             achievement_id: achievement.id,
-          });
+          } as any);
 
         if (!error) {
           newlyUnlocked.push(achievement);

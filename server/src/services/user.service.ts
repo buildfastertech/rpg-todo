@@ -73,15 +73,17 @@ export const userService = {
       console.error('Error getting achievements count:', achievementError);
     }
 
+    const userData: any = user;
+
     return {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      level: user.level,
+      id: userData.id,
+      username: userData.username,
+      email: userData.email,
+      level: userData.level,
       totalXp: totalXp || 0,
       completedTaskCount: completedTaskCount || 0,
       achievementsCount: achievementsCount || 0,
-      registrationDate: user.created_at,
+      registrationDate: userData.created_at,
     };
   },
 
@@ -100,9 +102,9 @@ export const userService = {
       }
 
       // Update username
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('users')
-        .update({ username: input.username } as any)
+        .update({ username: input.username })
         .eq('id', userId);
 
       if (updateError) {
@@ -126,7 +128,8 @@ export const userService = {
       .rpc('get_user_total_xp', { p_user_id: userId } as any);
 
     // Calculate XP to next level
-    const currentLevel = user?.level || 1;
+    const userData: any = user;
+    const currentLevel = userData?.level || 1;
     const nextLevelThresholds = [
       0, 100, 250, 500, 1000, 2000, 3500, 5500, 8000, 11000, 14500,
       18500, 23000, 28000, 33500, 39500, 46000, 53000, 60500, 68500,
@@ -176,6 +179,8 @@ export const userService = {
       .limit(1)
       .maybeSingle();
 
+    const lastLoginData: any = lastLogin;
+
     return {
       level: currentLevel,
       totalXp: totalXp || 0,
@@ -185,7 +190,7 @@ export const userService = {
       recentActivity: {
         tasksCompletedThisWeek: tasksCompletedThisWeek || 0,
         xpEarnedThisWeek,
-        lastLoginDate: lastLogin?.created_at || null,
+        lastLoginDate: lastLoginData?.created_at || null,
       },
     };
   },

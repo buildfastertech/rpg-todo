@@ -1,5 +1,5 @@
 import supabase from '../config/supabase';
-import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors.util';
+import { NotFoundError, BadRequestError } from '../utils/errors.util';
 import type { CreateTaskInput, UpdateTaskInput, TaskPriorityType, TaskStatusType } from '../validators/task.validator';
 
 interface Task {
@@ -105,19 +105,21 @@ export const taskService = {
       throw new NotFoundError('Task not found');
     }
 
+    const taskData: any = data;
+
     return {
-      id: data.id,
-      userId: data.user_id,
-      title: data.title,
-      description: data.description,
-      dueDate: data.due_date,
-      status: data.status,
-      priority: data.priority,
-      xpValue: data.xp_value,
-      category: data.category,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-      labels: data.custom_labels || [],
+      id: taskData.id,
+      userId: taskData.user_id,
+      title: taskData.title,
+      description: taskData.description,
+      dueDate: taskData.due_date,
+      status: taskData.status,
+      priority: taskData.priority,
+      xpValue: taskData.xp_value,
+      category: taskData.category,
+      createdAt: taskData.created_at,
+      updatedAt: taskData.updated_at,
+      labels: taskData.custom_labels || [],
     };
   },
 
@@ -135,7 +137,7 @@ export const taskService = {
         xp_value: xpValue,
         category: input.category || null,
         status: 'open',
-      })
+      } as any)
       .select()
       .single();
 
@@ -143,23 +145,25 @@ export const taskService = {
       throw new BadRequestError(`Failed to create task: ${error?.message}`);
     }
 
+    const taskData: any = task;
+
     // Add labels if provided
     if (input.labels && input.labels.length > 0) {
       const labelInserts = input.labels.map((label) => ({
-        task_id: task.id,
+        task_id: taskData.id,
         label_name: label,
       }));
 
       const { error: labelError } = await supabase
         .from('custom_labels')
-        .insert(labelInserts);
+        .insert(labelInserts as any);
 
       if (labelError) {
         console.error('Error adding labels:', labelError);
       }
     }
 
-    return this.getTaskById(task.id, userId);
+    return this.getTaskById(taskData.id, userId);
   },
 
   async updateTask(taskId: string, userId: string, input: UpdateTaskInput): Promise<Task> {
@@ -180,7 +184,7 @@ export const taskService = {
     }
 
     if (Object.keys(updateData).length > 0) {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('tasks')
         .update(updateData)
         .eq('id', taskId)
@@ -208,7 +212,7 @@ export const taskService = {
 
         await supabase
           .from('custom_labels')
-          .insert(labelInserts);
+          .insert(labelInserts as any);
       }
     }
 
@@ -239,7 +243,7 @@ export const taskService = {
     }
 
     // Update task status
-    const { error: updateError } = await supabase
+    const { error: updateError } = await (supabase as any)
       .from('tasks')
       .update({ status: 'completed' })
       .eq('id', taskId)
@@ -255,14 +259,14 @@ export const taskService = {
       p_xp_value: task.xpValue,
       p_description: `Completed task: ${task.title}`,
       p_task_id: taskId,
-    });
+    } as any);
 
     if (xpError) {
       console.error('Error awarding XP:', xpError);
       throw new BadRequestError('Failed to award XP');
     }
 
-    const xpData = xpResult?.[0] || { new_total_xp: 0, new_level: 1, leveled_up: false };
+    const xpData: any = xpResult?.[0] || { new_total_xp: 0, new_level: 1, leveled_up: false };
 
     // Get updated task
     const updatedTask = await this.getTaskById(taskId, userId);
@@ -278,16 +282,16 @@ export const taskService = {
       newLevel: xpData.new_level,
       leveledUp: xpData.leveled_up,
       newAchievements: newAchievements,
-    };
+    } as any;
   },
 
   async archiveTask(taskId: string, userId: string): Promise<Task> {
     // Verify task ownership
     await this.getTaskById(taskId, userId);
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('tasks')
-      .update({ status: 'archived' } as any)
+      .update({ status: 'archived' })
       .eq('id', taskId)
       .eq('user_id', userId);
 
@@ -306,9 +310,9 @@ export const taskService = {
       throw new BadRequestError('Task is not archived');
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('tasks')
-      .update({ status: 'open' } as any)
+      .update({ status: 'open' })
       .eq('id', taskId)
       .eq('user_id', userId);
 

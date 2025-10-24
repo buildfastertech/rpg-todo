@@ -53,7 +53,7 @@ export const authService = {
         email,
         password: hashedPassword,
         level: 1,
-      })
+      } as any)
       .select('id, username, email, level')
       .single();
 
@@ -62,32 +62,35 @@ export const authService = {
       throw new BadRequestError('Failed to create user');
     }
 
+    const userData: any = user;
+
     // Award registration XP (5 XP)
     const { data: xpResult, error: xpError } = await supabase.rpc('award_xp', {
-      p_user_id: user.id,
+      p_user_id: userData.id,
       p_xp_value: 5,
       p_description: 'Registration bonus',
       p_task_id: null,
-    });
+    } as any);
 
     if (xpError) {
       console.error('XP award error:', xpError);
     }
 
-    const totalXp = xpResult?.[0]?.new_total_xp || 5;
-    const level = xpResult?.[0]?.new_level || 1;
+    const xpData: any = xpResult?.[0] || {};
+    const totalXp = xpData.new_total_xp || 5;
+    const level = xpData.new_level || 1;
 
     // Generate JWT token
     const token = generateToken({
-      userId: user.id,
-      email: user.email,
+      userId: userData.id,
+      email: userData.email,
     });
 
     return {
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
         level,
         totalXp,
       },
@@ -109,8 +112,10 @@ export const authService = {
       throw new UnauthorizedError('Invalid email or password');
     }
 
+    const userData: any = user;
+
     // Verify password
-    const isPasswordValid = await comparePassword(password, user.password);
+    const isPasswordValid = await comparePassword(password, userData.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedError('Invalid email or password');
@@ -118,50 +123,51 @@ export const authService = {
 
     // Get current total XP
     const { data: currentXp } = await supabase.rpc('get_user_total_xp', {
-      p_user_id: user.id,
-    });
+      p_user_id: userData.id,
+    } as any);
 
     // Check if user already got login XP today
     const today = new Date().toISOString().split('T')[0];
     const { data: todayLogin } = await supabase
       .from('points_ledger')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', userData.id)
       .eq('description', 'Daily login')
       .gte('created_at', today)
       .maybeSingle();
 
     let totalXp = currentXp || 0;
-    let level = user.level;
+    let level = userData.level;
     let leveledUp = false;
 
     // Award daily login XP if not already awarded today
     if (!todayLogin) {
       const { data: xpResult, error: xpError } = await supabase.rpc('award_xp', {
-        p_user_id: user.id,
+        p_user_id: userData.id,
         p_xp_value: 2,
         p_description: 'Daily login',
         p_task_id: null,
-      });
+      } as any);
 
       if (!xpError && xpResult?.[0]) {
-        totalXp = xpResult[0].new_total_xp;
-        level = xpResult[0].new_level;
-        leveledUp = xpResult[0].leveled_up;
+        const xpData: any = xpResult[0];
+        totalXp = xpData.new_total_xp;
+        level = xpData.new_level;
+        leveledUp = xpData.leveled_up;
       }
     }
 
     // Generate JWT token
     const token = generateToken({
-      userId: user.id,
-      email: user.email,
+      userId: userData.id,
+      email: userData.email,
     });
 
     return {
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
         level,
         totalXp,
       },
