@@ -210,5 +210,18 @@ export const userService = {
       createdAt: entry.created_at,
     }));
   },
+
+  async deleteAccount(userId: string): Promise<void> {
+    // Delete user account - CASCADE will handle related records
+    // (tasks, points_ledger, achievement_user, custom_labels via task deletion)
+    const { error } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (error) {
+      throw new BadRequestError(`Failed to delete account: ${error.message}`);
+    }
+  },
 };
 

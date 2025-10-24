@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,15 +9,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CheckCircle2, MoreVertical, Pencil, Trash2, Archive, Calendar, Sparkles } from 'lucide-react';
+import { CheckCircle2, MoreVertical, Pencil, Trash2, Archive, Calendar, Sparkles, Loader2 } from 'lucide-react';
 import type { Task } from '@/types';
 
 interface TaskCardProps {
   task: Task;
-  onComplete: (taskId: string) => void;
+  onComplete: (taskId: string) => Promise<void>;
   onEdit: (task: Task) => void;
-  onDelete: (taskId: string) => void;
-  onArchive: (taskId: string) => void;
+  onDelete: (taskId: string) => Promise<void>;
+  onArchive: (taskId: string) => Promise<void>;
 }
 
 const priorityColors = {
@@ -27,8 +28,39 @@ const priorityColors = {
 };
 
 export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive }: TaskCardProps) {
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
+  
   const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status === 'open';
   const priorityColor = priorityColors[task.priority];
+
+  const handleComplete = async () => {
+    setIsCompleting(true);
+    try {
+      await onComplete(task.id);
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete(task.id);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    setIsArchiving(true);
+    try {
+      await onArchive(task.id);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-purple-500/10">
@@ -55,29 +87,42 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100"
+                disabled={isCompleting || isDeleting || isArchiving}
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {task.status === 'open' && (
-                <DropdownMenuItem onClick={() => onComplete(task.id)}>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={handleComplete} disabled={isCompleting}>
+                  {isCompleting ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                  )}
                   Complete
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onEdit(task)}>
+              <DropdownMenuItem onClick={() => onEdit(task)} disabled={isCompleting || isDeleting || isArchiving}>
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
               {task.status !== 'archived' && (
-                <DropdownMenuItem onClick={() => onArchive(task.id)}>
-                  <Archive className="mr-2 h-4 w-4" />
+                <DropdownMenuItem onClick={handleArchive} disabled={isArchiving}>
+                  {isArchiving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Archive className="mr-2 h-4 w-4" />
+                  )}
                   Archive
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onDelete(task.id)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleDelete} className="text-destructive" disabled={isDeleting}>
+                {isDeleting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="mr-2 h-4 w-4" />
+                )}
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -139,11 +184,21 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
         {task.status === 'open' && (
           <Button
             size="sm"
-            onClick={() => onComplete(task.id)}
+            onClick={handleComplete}
             className="cursor-pointer"
+            disabled={isCompleting}
           >
-            <CheckCircle2 className="mr-1.5 h-4 w-4" />
-            Complete
+            {isCompleting ? (
+              <>
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                Completing...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                Complete
+              </>
+            )}
           </Button>
         )}
 

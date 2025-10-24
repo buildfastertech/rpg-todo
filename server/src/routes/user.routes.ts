@@ -42,5 +42,12 @@ router.get('/stats', userController.getStats);
  */
 router.get('/xp-history', userController.getXPHistory);
 
+/**
+ * @route   DELETE /api/users/account
+ * @desc    Delete user account and all associated data
+ * @access  Private
+ */
+router.delete('/account', userController.deleteAccount);
+
 export default router;
 

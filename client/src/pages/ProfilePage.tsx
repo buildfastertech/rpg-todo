@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import MainLayout from '@/components/layout/MainLayout';
+import ProfileSkeleton from '@/components/ProfileSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -166,9 +167,7 @@ export default function ProfilePage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        </div>
+        <ProfileSkeleton />
       </MainLayout>
     );
   }

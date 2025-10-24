@@ -231,6 +231,26 @@
             "description": "Get user XP transaction history (Coming Soon)"
           },
           "response": []
+        },
+        {
+          "name": "Delete Account",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/account",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "account"]
+            },
+            "description": "Delete user account and all associated data permanently. WARNING: This action cannot be undone!"
+          },
+          "response": []
         }
       ]
     },

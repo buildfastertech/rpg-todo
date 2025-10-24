@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskCard from '@/components/TaskCard';
-import { Plus, Search, SlidersHorizontal, Loader2, ListTodo } from 'lucide-react';
+import TaskSkeleton from '@/components/TaskSkeleton';
+import { Plus, Search, SlidersHorizontal, ListTodo } from 'lucide-react';
 import type { Task, TaskStatus, TaskPriority, TaskFilters } from '@/types';
 import { toast } from 'sonner';
+import { showErrorToast, showSuccessToast } from '@/utils/errorHandler';
 
 interface TaskListProps {
   onCreateTask: () => void;
@@ -42,9 +44,8 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
       setTasks(response.items);
       setTotalPages(response.totalPages);
       setCurrentPage(response.page);
-    } catch (error: any) {
-      console.error('Failed to load tasks:', error);
-      toast.error(error.response?.data?.message || 'Failed to load tasks');
+    } catch (error) {
+      showErrorToast(error, 'Failed to load tasks');
     } finally {
       setIsLoading(false);
     }
@@ -79,9 +80,8 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
       if (onStatsRefresh) {
         onStatsRefresh();
       }
-    } catch (error: any) {
-      console.error('Failed to complete task:', error);
-      toast.error(error.response?.data?.message || 'Failed to complete task');
+    } catch (error) {
+      showErrorToast(error, 'Failed to complete task');
     }
   };
 
@@ -92,22 +92,20 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
 
     try {
       await taskService.deleteTask(taskId);
-      toast.success('Task deleted successfully');
+      showSuccessToast('Task deleted successfully');
       loadTasks();
-    } catch (error: any) {
-      console.error('Failed to delete task:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete task');
+    } catch (error) {
+      showErrorToast(error, 'Failed to delete task');
     }
   };
 
   const handleArchive = async (taskId: string) => {
     try {
       await taskService.archiveTask(taskId);
-      toast.success('Task archived successfully');
+      showSuccessToast('Task archived successfully');
       loadTasks();
-    } catch (error: any) {
-      console.error('Failed to archive task:', error);
-      toast.error(error.response?.data?.message || 'Failed to archive task');
+    } catch (error) {
+      showErrorToast(error, 'Failed to archive task');
     }
   };
 
@@ -230,8 +228,10 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
 
       {/* Loading state */}
       {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600 dark:text-purple-400" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <TaskSkeleton key={i} />
+          ))}
         </div>
       )}
 

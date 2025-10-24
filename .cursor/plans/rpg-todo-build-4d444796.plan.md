@@ -570,7 +570,7 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Build task card component with priority color-coding
 - [x] Implement task actions (complete, edit, delete, archive)
 - [x] Build Profile page with stats and XP history
-- [ ] Build Achievements page with progress bars and unlock notifications
-- [ ] Build Settings page with GDPR consent and legal links
-- [ ] Add loading states and error handling throughout
+- [x] Build Achievements page with progress bars and unlock notifications
+- [x] Build Settings page with GDPR consent, legal links, and account deletion
+- [x] Add loading states and error handling throughout
 - [ ] Test responsive design on mobile/tablet/desktop

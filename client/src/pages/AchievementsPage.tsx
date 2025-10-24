@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { achievementService } from '@/services/achievement.service';
 import MainLayout from '@/components/layout/MainLayout';
+import AchievementsSkeleton from '@/components/AchievementsSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Lock, CheckCircle2, Target, Loader2, Sparkles } from 'lucide-react';
+import { Trophy, Lock, CheckCircle2, Target, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Achievement, AchievementWithProgress } from '@/types';
 
@@ -75,9 +76,7 @@ export default function AchievementsPage() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-        </div>
+        <AchievementsSkeleton />
       </MainLayout>
     );
   }
