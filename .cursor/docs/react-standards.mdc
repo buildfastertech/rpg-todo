@@ -364,6 +364,69 @@ export const TaskItem = React.memo<TaskItemProps>(({ task, onComplete }) => {
 8. **Avoid inline functions in JSX** - Define handlers outside JSX when possible
 9. **Clean up effects** - Return cleanup functions from useEffect
 10. **Type everything** - Leverage TypeScript for type safety
+11. **Always check for null/undefined before array operations** - Prevent runtime errors
+
+### Critical: Null/Undefined Array Checks
+
+**ALWAYS check if an array exists before checking its length or mapping over it:**
+
+```typescript
+// ❌ BAD - Will crash if xpHistory is undefined
+{xpHistory.length === 0 ? (
+  <EmptyState />
+) : (
+  xpHistory.map(item => <Item key={item.id} {...item} />)
+)}
+
+// ✅ GOOD - Safe check
+{!xpHistory || xpHistory.length === 0 ? (
+  <EmptyState />
+) : (
+  xpHistory.map(item => <Item key={item.id} {...item} />)
+)}
+
+// ✅ ALSO GOOD - Nullish coalescing with fallback
+{(xpHistory || []).length === 0 ? (
+  <EmptyState />
+) : (
+  (xpHistory || []).map(item => <Item key={item.id} {...item} />)
+)}
+```
+
+**Why this matters:**
+- API calls may not return data immediately (async state)
+- Network errors can leave state as `undefined`
+- TypeScript allows `Array<T> | undefined` in many cases
+- Runtime errors break the entire component tree
+
+**Pattern for rendering lists:**
+
+```typescript
+// State initialization
+const [items, setItems] = useState<Item[]>([]);
+
+// Rendering with safety checks
+return (
+  <div>
+    {!items || items.length === 0 ? (
+      <EmptyState message="No items found" />
+    ) : (
+      <div className="grid gap-4">
+        {items.map((item) => (
+          <ItemCard key={item.id} item={item} />
+        ))}
+      </div>
+    )}
+  </div>
+);
+```
+
+**Common scenarios requiring checks:**
+- API response data (tasks, achievements, history)
+- Filtered/sorted arrays
+- Paginated data
+- Search results
+- Conditional lists (e.g., completed tasks)
 
 ## Common Patterns for RPG Todo
 
