@@ -49,7 +49,7 @@ export const userService = {
 
     // Get total XP from ledger
     const { data: totalXp, error: xpError } = await supabase
-      .rpc('get_user_total_xp', { p_user_id: userId });
+      .rpc('get_user_total_xp', { p_user_id: userId } as any);
 
     if (xpError) {
       console.error('Error getting total XP:', xpError);
@@ -57,7 +57,7 @@ export const userService = {
 
     // Get completed task count
     const { data: completedTaskCount, error: taskError } = await supabase
-      .rpc('get_completed_task_count', { p_user_id: userId });
+      .rpc('get_completed_task_count', { p_user_id: userId } as any);
 
     if (taskError) {
       console.error('Error getting completed task count:', taskError);
@@ -102,7 +102,7 @@ export const userService = {
       // Update username
       const { error: updateError } = await supabase
         .from('users')
-        .update({ username: input.username })
+        .update({ username: input.username } as any)
         .eq('id', userId);
 
       if (updateError) {
@@ -123,7 +123,7 @@ export const userService = {
       .single();
 
     const { data: totalXp } = await supabase
-      .rpc('get_user_total_xp', { p_user_id: userId });
+      .rpc('get_user_total_xp', { p_user_id: userId } as any);
 
     // Calculate XP to next level
     const currentLevel = user?.level || 1;
@@ -137,7 +137,7 @@ export const userService = {
 
     // Get completed task count
     const { data: completedTaskCount } = await supabase
-      .rpc('get_completed_task_count', { p_user_id: userId });
+      .rpc('get_completed_task_count', { p_user_id: userId } as any);
 
     // Get achievements count
     const { count: achievementsCount } = await supabase
@@ -164,7 +164,7 @@ export const userService = {
       .eq('user_id', userId)
       .gte('created_at', startOfWeek.toISOString());
 
-    const xpEarnedThisWeek = xpThisWeek?.reduce((sum, entry) => sum + entry.xp_value, 0) || 0;
+    const xpEarnedThisWeek = xpThisWeek?.reduce((sum: number, entry: any) => sum + entry.xp_value, 0) || 0;
 
     // Get last login date (most recent "Daily login" entry)
     const { data: lastLogin } = await supabase
@@ -202,7 +202,7 @@ export const userService = {
       throw new BadRequestError('Failed to fetch XP history');
     }
 
-    return (data || []).map((entry) => ({
+    return (data || []).map((entry: any) => ({
       id: entry.id,
       description: entry.description,
       xpValue: entry.xp_value,

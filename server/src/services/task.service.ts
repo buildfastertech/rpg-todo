@@ -287,7 +287,7 @@ export const taskService = {
 
     const { error } = await supabase
       .from('tasks')
-      .update({ status: 'archived' })
+      .update({ status: 'archived' } as any)
       .eq('id', taskId)
       .eq('user_id', userId);
 
@@ -308,7 +308,7 @@ export const taskService = {
 
     const { error } = await supabase
       .from('tasks')
-      .update({ status: 'open' })
+      .update({ status: 'open' } as any)
       .eq('id', taskId)
       .eq('user_id', userId);
 

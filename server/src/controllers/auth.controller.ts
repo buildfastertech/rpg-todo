@@ -35,7 +35,7 @@ export const authController = {
     }
   },
 
-  async logout(req: Request, res: Response): void {
+  async logout(_req: Request, res: Response): Promise<void> {
     res.json({
       success: true,
       message: 'Logout successful',

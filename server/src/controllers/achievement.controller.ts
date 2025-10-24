@@ -3,7 +3,7 @@ import { achievementService } from '../services/achievement.service';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 export const achievementController = {
-  async getAllAchievements(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+  async getAllAchievements(_req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const achievements = await achievementService.getAllAchievements();
 
