@@ -1,6 +1,9 @@
 import supabase from '../config/supabase';
 import { NotFoundError, BadRequestError } from '../utils/errors.util';
 import type { CreateCategoryInput, UpdateCategoryInput } from '../validators/category.validator';
+import type { Database } from '../types/database.types';
+
+type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface Category {
   id: string;
@@ -45,13 +48,15 @@ export const categoryService = {
       throw new NotFoundError('Category not found');
     }
 
+    const category = data as CategoryRow;
+
     return {
-      id: data.id,
-      userId: data.user_id,
-      name: data.name,
-      color: data.color,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      id: category.id,
+      userId: category.user_id,
+      name: category.name,
+      color: category.color,
+      createdAt: category.created_at,
+      updatedAt: category.updated_at,
     };
   },
 
@@ -82,13 +87,15 @@ export const categoryService = {
       throw new BadRequestError(`Failed to create category: ${error?.message}`);
     }
 
+    const category = data as CategoryRow;
+
     return {
-      id: data.id,
-      userId: data.user_id,
-      name: data.name,
-      color: data.color,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      id: category.id,
+      userId: category.user_id,
+      name: category.name,
+      color: category.color,
+      createdAt: category.created_at,
+      updatedAt: category.updated_at,
     };
   },
 
@@ -160,13 +167,14 @@ export const categoryService = {
       .single();
 
     if (existing) {
+      const category = existing as CategoryRow;
       return {
-        id: existing.id,
-        userId: existing.user_id,
-        name: existing.name,
-        color: existing.color,
-        createdAt: existing.created_at,
-        updatedAt: existing.updated_at,
+        id: category.id,
+        userId: category.user_id,
+        name: category.name,
+        color: category.color,
+        createdAt: category.created_at,
+        updatedAt: category.updated_at,
       };
     }
 
