@@ -140,7 +140,7 @@ export default function Header({ refreshTrigger }: HeaderProps) {
             <Card className="border-2 border-slate-300 bg-white dark:border-neutral-700 dark:bg-neutral-950/95 p-3 backdrop-blur-sm">
               <div className="flex items-center space-x-4">
                 <div className="text-center">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Level</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">Level</p>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {isLoading ? '-' : stats?.level || 1}
                   </p>
@@ -148,7 +148,7 @@ export default function Header({ refreshTrigger }: HeaderProps) {
                 <div className="min-w-[200px]">
                   <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-100">
                     <span>XP Progress</span>
-                    <span className="text-purple-600 dark:text-purple-400">
+                    <span className="text-green-600 dark:text-green-400">
                       {isLoading ? '-' : `${getXPDisplayText().current} / ${getXPDisplayText().needed}`}
                     </span>
                   </div>
@@ -201,7 +201,7 @@ export default function Header({ refreshTrigger }: HeaderProps) {
           <Card className="border-2 border-slate-300 bg-white dark:border-neutral-700 dark:bg-neutral-950/95 p-3 backdrop-blur-sm">
             <div className="flex items-center space-x-4">
               <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">Level</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">Level</p>
                 <p className="text-xl font-bold text-slate-900 dark:text-white">
                   {isLoading ? '-' : stats?.level || 1}
                 </p>
@@ -209,7 +209,7 @@ export default function Header({ refreshTrigger }: HeaderProps) {
               <div className="flex-1">
                 <div className="mb-1.5 flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-100">
                   <span>XP Progress</span>
-                  <span className="text-purple-600 dark:text-purple-400">
+                  <span className="text-green-600 dark:text-green-400">
                     {isLoading ? '-' : `${getXPDisplayText().current} / ${getXPDisplayText().needed}`}
                   </span>
                 </div>

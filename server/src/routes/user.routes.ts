@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { userController } from '../controllers/user.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { validateRequest } from '../middleware/validation.middleware';
-import { updateProfileSchema } from '../validators/user.validator';
+import { updateProfileSchema, updatePasswordSchema } from '../validators/user.validator';
 
 const router = Router();
 
@@ -41,6 +41,17 @@ router.get('/stats', userController.getStats);
  * @query   limit - Number of entries to return (1-100, default: 20)
  */
 router.get('/xp-history', userController.getXPHistory);
+
+/**
+ * @route   PUT /api/users/password
+ * @desc    Update user password
+ * @access  Private
+ */
+router.put(
+  '/password',
+  validateRequest(updatePasswordSchema),
+  userController.updatePassword
+);
 
 /**
  * @route   DELETE /api/users/account

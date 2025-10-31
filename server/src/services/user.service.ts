@@ -1,6 +1,7 @@
 import supabase from '../config/supabase';
-import { NotFoundError, ConflictError, BadRequestError } from '../utils/errors.util';
-import type { UpdateProfileInput } from '../validators/user.validator';
+import bcrypt from 'bcrypt';
+import { NotFoundError, ConflictError, BadRequestError, UnauthorizedError } from '../utils/errors.util';
+import type { UpdateProfileInput, UpdatePasswordInput } from '../validators/user.validator';
 
 interface UserProfile {
   id: string;
@@ -214,6 +215,49 @@ export const userService = {
       taskId: entry.task_id,
       createdAt: entry.created_at,
     }));
+  },
+
+  async updatePassword(userId: string, input: UpdatePasswordInput): Promise<void> {
+    // Get current user password hash
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('password')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('User not found:', userError);
+      throw new NotFoundError('User not found');
+    }
+
+    const userData: any = user;
+
+    // Verify current password
+    console.log('Verifying current password for user:', userId);
+    const isValidPassword = await bcrypt.compare(input.currentPassword, userData.password);
+    
+    if (!isValidPassword) {
+      console.log('Current password verification failed for user:', userId);
+      throw new UnauthorizedError('Current password is incorrect');
+    }
+
+    console.log('Current password verified successfully for user:', userId);
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(input.newPassword, 10);
+
+    // Update password
+    const { error: updateError } = await (supabase as any)
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Failed to update password:', updateError);
+      throw new BadRequestError('Failed to update password');
+    }
+
+    console.log('Password updated successfully for user:', userId);
   },
 
   async deleteAccount(userId: string): Promise<void> {

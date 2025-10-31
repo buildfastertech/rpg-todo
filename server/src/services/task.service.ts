@@ -2,6 +2,12 @@ import supabase from '../config/supabase';
 import { NotFoundError, BadRequestError } from '../utils/errors.util';
 import type { CreateTaskInput, UpdateTaskInput, TaskPriorityType, TaskStatusType } from '../validators/task.validator';
 
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface Task {
   id: string;
   userId: string;
@@ -12,6 +18,7 @@ interface Task {
   priority: TaskPriorityType;
   xpValue: number;
   category: string | null;
+  categories?: Category[];
   createdAt: string;
   updatedAt: string;
   labels?: Label[];
@@ -75,6 +82,32 @@ export const taskService = {
       throw new BadRequestError(`Failed to fetch tasks: ${error.message}`);
     }
 
+    // Fetch categories for all tasks
+    const taskIds = (data || []).map((task: any) => task.id);
+    let categoriesMap: { [taskId: string]: Category[] } = {};
+
+    if (taskIds.length > 0) {
+      const { data: taskCategoriesData } = await supabase
+        .from('task_categories')
+        .select('task_id, categories(id, name, color)')
+        .in('task_id', taskIds);
+
+      if (taskCategoriesData) {
+        taskCategoriesData.forEach((tc: any) => {
+          if (!categoriesMap[tc.task_id]) {
+            categoriesMap[tc.task_id] = [];
+          }
+          if (tc.categories) {
+            categoriesMap[tc.task_id].push({
+              id: tc.categories.id,
+              name: tc.categories.name,
+              color: tc.categories.color,
+            });
+          }
+        });
+      }
+    }
+
     const tasks = (data || []).map((task: any) => ({
       id: task.id,
       userId: task.user_id,
@@ -85,6 +118,7 @@ export const taskService = {
       priority: task.priority,
       xpValue: task.xp_value,
       category: task.category,
+      categories: categoriesMap[task.id] || [],
       createdAt: task.created_at,
       updatedAt: task.updated_at,
       labels: task.custom_labels || [],
@@ -107,6 +141,18 @@ export const taskService = {
 
     const taskData: any = data;
 
+    // Fetch categories for this task
+    const { data: taskCategoriesData } = await supabase
+      .from('task_categories')
+      .select('categories(id, name, color)')
+      .eq('task_id', taskId);
+
+    const categories = (taskCategoriesData || []).map((tc: any) => ({
+      id: tc.categories.id,
+      name: tc.categories.name,
+      color: tc.categories.color,
+    }));
+
     return {
       id: taskData.id,
       userId: taskData.user_id,
@@ -117,6 +163,7 @@ export const taskService = {
       priority: taskData.priority,
       xpValue: taskData.xp_value,
       category: taskData.category,
+      categories: categories,
       createdAt: taskData.created_at,
       updatedAt: taskData.updated_at,
       labels: taskData.custom_labels || [],
@@ -146,6 +193,22 @@ export const taskService = {
     }
 
     const taskData: any = task;
+
+    // Add categories if provided
+    if (input.categoryIds && input.categoryIds.length > 0) {
+      const categoryInserts = input.categoryIds.map((categoryId) => ({
+        task_id: taskData.id,
+        category_id: categoryId,
+      }));
+
+      const { error: categoryError } = await supabase
+        .from('task_categories')
+        .insert(categoryInserts as any);
+
+      if (categoryError) {
+        console.error('Error adding categories:', categoryError);
+      }
+    }
 
     // Add labels if provided
     if (input.labels && input.labels.length > 0) {
@@ -192,6 +255,27 @@ export const taskService = {
 
       if (error) {
         throw new BadRequestError(`Failed to update task: ${error.message}`);
+      }
+    }
+
+    // Update categories if provided
+    if (input.categoryIds !== undefined) {
+      // Delete existing category associations
+      await supabase
+        .from('task_categories')
+        .delete()
+        .eq('task_id', taskId);
+
+      // Add new category associations
+      if (input.categoryIds.length > 0) {
+        const categoryInserts = input.categoryIds.map((categoryId) => ({
+          task_id: taskId,
+          category_id: categoryId,
+        }));
+
+        await supabase
+          .from('task_categories')
+          .insert(categoryInserts as any);
       }
     }
 

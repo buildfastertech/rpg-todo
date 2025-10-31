@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { userService } from '../services/user.service';
 import { AuthRequest } from '../middleware/auth.middleware';
-import type { UpdateProfileInput } from '../validators/user.validator';
+import type { UpdateProfileInput, UpdatePasswordInput } from '../validators/user.validator';
 
 export const userController = {
   async getProfile(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -72,6 +72,22 @@ export const userController = {
           count: history.length,
           limit,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async updatePassword(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const input: UpdatePasswordInput = req.body;
+
+      await userService.updatePassword(userId, input);
+
+      res.json({
+        success: true,
+        message: 'Password updated successfully',
       });
     } catch (error) {
       next(error);

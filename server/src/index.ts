@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import taskRoutes from './routes/task.routes';
 import achievementRoutes from './routes/achievement.routes';
+import categoryRoutes from './routes/category.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 const app: Application = express();
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/achievements', achievementRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

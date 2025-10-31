@@ -216,7 +216,7 @@ export default function AchievementsPage() {
                             <span className="font-medium text-slate-600 dark:text-slate-400">
                               Progress
                             </span>
-                            <span className="font-semibold text-purple-600 dark:text-purple-400">
+                            <span className="font-semibold text-green-600 dark:text-green-400">
                               {achievement.current} / {achievement.required}
                             </span>
                           </div>

@@ -57,6 +57,16 @@ export interface AuthResponse {
   };
 }
 
+// Category types
+export interface Category {
+  id: string;
+  userId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Task types
 export type TaskStatus = 'open' | 'completed' | 'archived';
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -71,6 +81,7 @@ export interface Task {
   priority: TaskPriority;
   xpValue: number;
   category?: string;
+  categories?: Category[];
   labels: Array<string | { id: string; label_name: string }>;
   createdAt: string;
   updatedAt: string;
@@ -82,6 +93,7 @@ export interface CreateTaskData {
   dueDate?: string;
   priority: TaskPriority;
   category?: string;
+  categoryIds?: string[];
   labels?: string[];
 }
 
@@ -91,6 +103,7 @@ export interface UpdateTaskData {
   dueDate?: string;
   priority?: TaskPriority;
   category?: string;
+  categoryIds?: string[];
 }
 
 export interface TaskFilters {

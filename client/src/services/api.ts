@@ -38,12 +38,17 @@ class ApiClient {
       async (error: AxiosError<ApiError>) => {
         const config = error.config as InternalAxiosRequestConfig & { _retryCount?: number };
         
-        // Handle 401 Unauthorized
+        // Handle 401 Unauthorized - but only for actual auth failures, not password validation
         if (error.response?.status === 401) {
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-          return Promise.reject(error);
+          // Don't auto-logout for password change errors (wrong current password)
+          const isPasswordChangeError = config?.url?.includes('/users/password');
+          
+          if (!isPasswordChangeError) {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+            return Promise.reject(error);
+          }
         }
 
         // Check if we should retry

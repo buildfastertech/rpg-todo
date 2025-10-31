@@ -63,7 +63,7 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-purple-500/10">
+    <Card className="group relative overflow-hidden transition-all hover:shadow-md dark:hover:shadow-lg dark:hover:shadow-green-500/10">
       {/* Priority indicator bar */}
       <div className={`absolute left-0 top-0 h-full w-1 ${priorityColor.split(' ')[0]}`} />
 
@@ -131,6 +131,30 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
       </CardHeader>
 
       <CardContent className="space-y-3 pb-3 pl-5">
+        {/* Categories */}
+        {task.categories && task.categories.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {task.categories.map((category) => (
+              <Badge
+                key={category.id}
+                variant="outline"
+                className="text-xs gap-1.5"
+                style={{
+                  backgroundColor: `${category.color}15`,
+                  borderColor: category.color,
+                  color: category.color,
+                }}
+              >
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: category.color }}
+                />
+                {category.name}
+              </Badge>
+            ))}
+          </div>
+        )}
+
         {/* Labels */}
         {task.labels && task.labels.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
@@ -138,7 +162,7 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
               <Badge
                 key={index}
                 variant="outline"
-                className="text-xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800"
+                className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
               >
                 {typeof label === 'string' ? label : label.label_name || label}
               </Badge>
@@ -163,19 +187,12 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
               </span>
             </div>
           )}
-
-          {/* Category */}
-          {task.category && (
-            <Badge variant="secondary" className="text-xs">
-              {task.category}
-            </Badge>
-          )}
         </div>
       </CardContent>
 
       <CardFooter className="flex items-center justify-between border-t pt-3 pl-5 bg-slate-50/50 dark:bg-neutral-900/50">
         {/* XP Value */}
-        <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 font-semibold">
+        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400 font-semibold">
           <Sparkles className="h-4 w-4" />
           <span className="text-sm">{task.xpValue} XP</span>
         </div>

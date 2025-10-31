@@ -266,7 +266,7 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <Sparkles className="h-5 w-5 text-green-600 dark:text-green-400" />
                 Level & Experience
               </CardTitle>
               <CardDescription>Your progression stats</CardDescription>
@@ -275,7 +275,7 @@ export default function ProfilePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Current Level</p>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats?.level || 1}</p>
+                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats?.level || 1}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total XP</p>
@@ -286,7 +286,7 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 <div className="mb-2 flex items-center justify-between text-sm">
                   <span className="font-medium text-slate-700 dark:text-slate-300">Progress to Level {(stats?.level || 1) + 1}</span>
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">
+                  <span className="font-semibold text-green-600 dark:text-green-400">
                     {getXPDisplayText().current} / {getXPDisplayText().needed} XP
                   </span>
                 </div>
@@ -377,7 +377,7 @@ export default function ProfilePage() {
                     </div>
                     <Badge 
                       variant={entry.xpValue > 0 ? 'default' : 'secondary'}
-                      className="ml-4 bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-400"
+                      className="ml-4 bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
                     >
                       {entry.xpValue > 0 ? '+' : ''}{entry.xpValue} XP
                     </Badge>

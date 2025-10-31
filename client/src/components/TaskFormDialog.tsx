@@ -32,11 +32,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { taskService } from '@/services/task.service';
+import { categoryService } from '@/services/category.service';
 import { CalendarIcon, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Task, TaskPriority } from '@/types';
+import type { Task, TaskPriority, Category } from '@/types';
 
 const taskFormSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -46,6 +48,7 @@ const taskFormSchema = z.object({
     required_error: 'Priority is required',
   }),
   category: z.string().max(50).optional(),
+  categoryIds: z.array(z.string()).max(10, 'Maximum 10 categories per task').optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -68,6 +71,8 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [labels, setLabels] = useState<string[]>([]);
   const [labelInput, setLabelInput] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -76,8 +81,28 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
       description: '',
       priority: 'Medium',
       category: '',
+      categoryIds: [],
     },
   });
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        setIsLoadingCategories(true);
+        const fetchedCategories = await categoryService.getCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    if (open) {
+      loadCategories();
+    }
+  }, [open]);
 
   // Load task data when editing
   useEffect(() => {
@@ -88,6 +113,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
         priority: task.priority,
         category: task.category || '',
+        categoryIds: task.categories?.map((cat) => cat.id) || [],
       });
       // Extract labels from task
       const taskLabels = (task.labels || []).map((label) =>
@@ -101,6 +127,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         dueDate: undefined,
         priority: 'Medium',
         category: '',
+        categoryIds: [],
       });
       setLabels([]);
     }
@@ -128,6 +155,43 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
     }
   };
 
+  const handleCreateCategory = async (name: string) => {
+    try {
+      const newCategory = await categoryService.createCategory({ name });
+      setCategories([...categories, newCategory]);
+      const currentCategoryIds = form.getValues('categoryIds') || [];
+      form.setValue('categoryIds', [...currentCategoryIds, newCategory.id]);
+      toast.success(`Category "${name}" created`);
+    } catch (error: any) {
+      console.error('Failed to create category:', error);
+      toast.error(error.response?.data?.message || 'Failed to create category');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+    try {
+      await categoryService.deleteCategory(categoryId);
+      // Remove from local state
+      setCategories(categories.filter((cat) => cat.id !== categoryId));
+      // Remove from form if selected
+      const currentCategoryIds = form.getValues('categoryIds') || [];
+      if (currentCategoryIds.includes(categoryId)) {
+        form.setValue('categoryIds', currentCategoryIds.filter((id) => id !== categoryId));
+      }
+      toast.success(`Category "${categoryName}" deleted`);
+    } catch (error: any) {
+      console.error('Failed to delete category:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete category');
+      throw error; // Re-throw to let the component handle the error state
+    }
+  };
+
+  const categoryOptions: MultiSelectOption[] = categories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+    color: cat.color,
+  }));
+
   const onSubmit = async (data: TaskFormValues) => {
     setIsSubmitting(true);
 
@@ -140,6 +204,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
           dueDate: data.dueDate ? data.dueDate.toISOString() : undefined,
           priority: data.priority,
           category: data.category,
+          categoryIds: data.categoryIds,
         });
         toast.success('Task updated successfully');
       } else {
@@ -150,6 +215,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
           dueDate: data.dueDate ? data.dueDate.toISOString() : undefined,
           priority: data.priority,
           category: data.category,
+          categoryIds: data.categoryIds,
           labels: labels.length > 0 ? labels : undefined,
         });
         toast.success('Task created successfully', {
@@ -285,15 +351,28 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
               />
             </div>
 
-            {/* Category */}
+            {/* Categories */}
             <FormField
               control={form.control}
-              name="category"
+              name="categoryIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Categories</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Work, Personal, Health..." {...field} />
+                    <MultiSelect
+                      options={categoryOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select or create categories..."
+                      emptyText="No categories found. Start typing to create one!"
+                      searchPlaceholder="Search or create category..."
+                      maxSelected={10}
+                      onCreateNew={handleCreateCategory}
+                      createNewLabel="Create category"
+                      disabled={isLoadingCategories}
+                      onDelete={handleDeleteCategory}
+                      showDelete={true}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -321,11 +400,11 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
                       <Badge
                         key={label}
                         variant="secondary"
-                        className="gap-1 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                        className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                       >
                         {label}
                         <X
-                          className="h-3 w-3 cursor-pointer hover:text-purple-900 dark:hover:text-purple-300"
+                          className="h-3 w-3 cursor-pointer hover:text-green-900 dark:hover:text-green-300"
                           onClick={() => handleRemoveLabel(label)}
                         />
                       </Badge>
@@ -336,15 +415,15 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
             )}
 
             {/* XP Estimate */}
-            <div className="rounded-lg border bg-purple-50 p-4 dark:bg-purple-900/20">
+            <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                  <Sparkles className="h-5 w-5 text-green-600 dark:text-green-400" />
                   <span className="font-semibold text-slate-900 dark:text-white">
                     Estimated Reward
                   </span>
                 </div>
-                <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {estimatedXP} XP
                 </span>
               </div>
