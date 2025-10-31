@@ -52,6 +52,49 @@ export interface Database {
           created_at?: string
         }
       }
+      labels: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          color: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          color?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          color?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      task_labels: {
+        Row: {
+          task_id: string
+          label_id: string
+          created_at: string
+        }
+        Insert: {
+          task_id: string
+          label_id: string
+          created_at?: string
+        }
+        Update: {
+          task_id?: string
+          label_id?: string
+          created_at?: string
+        }
+      }
       users: {
         Row: {
           id: string

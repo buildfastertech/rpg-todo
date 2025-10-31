@@ -35,10 +35,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { taskService } from '@/services/task.service';
 import { categoryService } from '@/services/category.service';
+import { labelService } from '@/services/label.service';
 import { CalendarIcon, X, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Task, TaskPriority, Category } from '@/types';
+import type { Task, TaskPriority, Category, Label } from '@/types';
 
 const taskFormSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
@@ -49,6 +50,7 @@ const taskFormSchema = z.object({
   }),
   category: z.string().max(50).optional(),
   categoryIds: z.array(z.string()).max(10, 'Maximum 10 categories per task').optional(),
+  labelIds: z.array(z.string()).max(20, 'Maximum 20 labels per task').optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -69,10 +71,10 @@ const priorityXP = {
 
 export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: TaskFormDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [labels, setLabels] = useState<string[]>([]);
-  const [labelInput, setLabelInput] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [labels, setLabels] = useState<Label[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isLoadingLabels, setIsLoadingLabels] = useState(false);
 
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
@@ -82,25 +84,32 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
       priority: 'Medium',
       category: '',
       categoryIds: [],
+      labelIds: [],
     },
   });
 
-  // Load categories on mount
+  // Load categories and labels on mount
   useEffect(() => {
-    const loadCategories = async () => {
+    const loadData = async () => {
       try {
         setIsLoadingCategories(true);
-        const fetchedCategories = await categoryService.getCategories();
+        setIsLoadingLabels(true);
+        const [fetchedCategories, fetchedLabels] = await Promise.all([
+          categoryService.getCategories(),
+          labelService.getLabels(),
+        ]);
         setCategories(fetchedCategories);
+        setLabels(fetchedLabels);
       } catch (error) {
-        console.error('Failed to load categories:', error);
+        console.error('Failed to load data:', error);
       } finally {
         setIsLoadingCategories(false);
+        setIsLoadingLabels(false);
       }
     };
 
     if (open) {
-      loadCategories();
+      loadData();
     }
   }, [open]);
 
@@ -114,12 +123,8 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         priority: task.priority,
         category: task.category || '',
         categoryIds: task.categories?.map((cat) => cat.id) || [],
+        labelIds: task.labels?.map((label) => label.id) || [],
       });
-      // Extract labels from task
-      const taskLabels = (task.labels || []).map((label) =>
-        typeof label === 'string' ? label : label.label_name
-      );
-      setLabels(taskLabels);
     } else {
       form.reset({
         title: '',
@@ -128,32 +133,13 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         priority: 'Medium',
         category: '',
         categoryIds: [],
+        labelIds: [],
       });
-      setLabels([]);
     }
   }, [task, form]);
 
   const selectedPriority = form.watch('priority');
   const estimatedXP = selectedPriority ? priorityXP[selectedPriority] : 25;
-
-  const handleAddLabel = () => {
-    const trimmedLabel = labelInput.trim();
-    if (trimmedLabel && !labels.includes(trimmedLabel)) {
-      setLabels([...labels, trimmedLabel]);
-      setLabelInput('');
-    }
-  };
-
-  const handleRemoveLabel = (labelToRemove: string) => {
-    setLabels(labels.filter((label) => label !== labelToRemove));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddLabel();
-    }
-  };
 
   const handleCreateCategory = async (name: string) => {
     try {
@@ -186,10 +172,47 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
     }
   };
 
+  const handleCreateLabel = async (name: string) => {
+    try {
+      const newLabel = await labelService.createLabel({ name });
+      setLabels([...labels, newLabel]);
+      const currentLabelIds = form.getValues('labelIds') || [];
+      form.setValue('labelIds', [...currentLabelIds, newLabel.id]);
+      toast.success(`Label "${name}" created`);
+    } catch (error: any) {
+      console.error('Failed to create label:', error);
+      toast.error(error.response?.data?.message || 'Failed to create label');
+    }
+  };
+
+  const handleDeleteLabel = async (labelId: string, labelName: string) => {
+    try {
+      await labelService.deleteLabel(labelId);
+      // Remove from local state
+      setLabels(labels.filter((label) => label.id !== labelId));
+      // Remove from form if selected
+      const currentLabelIds = form.getValues('labelIds') || [];
+      if (currentLabelIds.includes(labelId)) {
+        form.setValue('labelIds', currentLabelIds.filter((id) => id !== labelId));
+      }
+      toast.success(`Label "${labelName}" deleted`);
+    } catch (error: any) {
+      console.error('Failed to delete label:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete label');
+      throw error; // Re-throw to let the component handle the error state
+    }
+  };
+
   const categoryOptions: MultiSelectOption[] = categories.map((cat) => ({
     value: cat.id,
     label: cat.name,
     color: cat.color,
+  }));
+
+  const labelOptions: MultiSelectOption[] = labels.map((label) => ({
+    value: label.id,
+    label: label.name,
+    color: label.color,
   }));
 
   const onSubmit = async (data: TaskFormValues) => {
@@ -205,6 +228,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
           priority: data.priority,
           category: data.category,
           categoryIds: data.categoryIds,
+          labelIds: data.labelIds,
         });
         toast.success('Task updated successfully');
       } else {
@@ -216,7 +240,7 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
           priority: data.priority,
           category: data.category,
           categoryIds: data.categoryIds,
-          labels: labels.length > 0 ? labels : undefined,
+          labelIds: data.labelIds,
         });
         toast.success('Task created successfully', {
           description: `You'll earn ${estimatedXP} XP when you complete this task!`,
@@ -226,7 +250,6 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
       onSuccess();
       onOpenChange(false);
       form.reset();
-      setLabels([]);
     } catch (error: any) {
       console.error('Failed to save task:', error);
       toast.error(error.response?.data?.message || 'Failed to save task');
@@ -379,40 +402,33 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
               )}
             />
 
-            {/* Custom Labels */}
-            {!task && (
-              <div className="space-y-2">
-                <FormLabel>Custom Labels</FormLabel>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Add a label..."
-                    value={labelInput}
-                    onChange={(e) => setLabelInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                  />
-                  <Button type="button" variant="outline" onClick={handleAddLabel}>
-                    Add
-                  </Button>
-                </div>
-                {labels.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {labels.map((label) => (
-                      <Badge
-                        key={label}
-                        variant="secondary"
-                        className="gap-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      >
-                        {label}
-                        <X
-                          className="h-3 w-3 cursor-pointer hover:text-green-900 dark:hover:text-green-300"
-                          onClick={() => handleRemoveLabel(label)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Labels */}
+            <FormField
+              control={form.control}
+              name="labelIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Labels</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={labelOptions}
+                      selected={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Select or create labels..."
+                      emptyText="No labels found. Start typing to create one!"
+                      searchPlaceholder="Search or create label..."
+                      maxSelected={20}
+                      onCreateNew={handleCreateLabel}
+                      createNewLabel="Create label"
+                      disabled={isLoadingLabels}
+                      onDelete={handleDeleteLabel}
+                      showDelete={true}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* XP Estimate */}
             <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900/20">

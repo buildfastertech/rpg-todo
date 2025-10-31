@@ -67,6 +67,16 @@ export interface Category {
   updatedAt: string;
 }
 
+// Label types
+export interface Label {
+  id: string;
+  userId: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Task types
 export type TaskStatus = 'open' | 'completed' | 'archived';
 export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Urgent';
@@ -82,7 +92,7 @@ export interface Task {
   xpValue: number;
   category?: string;
   categories?: Category[];
-  labels: Array<string | { id: string; label_name: string }>;
+  labels?: Label[];
   createdAt: string;
   updatedAt: string;
 }
@@ -94,7 +104,7 @@ export interface CreateTaskData {
   priority: TaskPriority;
   category?: string;
   categoryIds?: string[];
-  labels?: string[];
+  labelIds?: string[];
 }
 
 export interface UpdateTaskData {
@@ -104,6 +114,7 @@ export interface UpdateTaskData {
   priority?: TaskPriority;
   category?: string;
   categoryIds?: string[];
+  labelIds?: string[];
 }
 
 export interface TaskFilters {

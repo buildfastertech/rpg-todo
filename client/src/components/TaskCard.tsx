@@ -158,13 +158,22 @@ export default function TaskCard({ task, onComplete, onEdit, onDelete, onArchive
         {/* Labels */}
         {task.labels && task.labels.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {task.labels.map((label, index) => (
+            {task.labels.map((label) => (
               <Badge
-                key={index}
+                key={label.id}
                 variant="outline"
-                className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                className="text-xs gap-1.5"
+                style={{
+                  backgroundColor: `${label.color}15`,
+                  borderColor: label.color,
+                  color: label.color,
+                }}
               >
-                {typeof label === 'string' ? label : label.label_name || label}
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: label.color }}
+                />
+                {label.name}
               </Badge>
             ))}
           </div>

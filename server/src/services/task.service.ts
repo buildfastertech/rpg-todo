@@ -8,6 +8,12 @@ interface Category {
   color: string;
 }
 
+interface Label {
+  id: string;
+  name: string;
+  color: string;
+}
+
 interface Task {
   id: string;
   userId: string;
@@ -19,14 +25,9 @@ interface Task {
   xpValue: number;
   category: string | null;
   categories?: Category[];
+  labels?: Label[];
   createdAt: string;
   updatedAt: string;
-  labels?: Label[];
-}
-
-interface Label {
-  id: string;
-  labelName: string;
 }
 
 interface TaskFilters {
@@ -59,7 +60,7 @@ export const taskService = {
   async getTasks(userId: string, filters: TaskFilters): Promise<{ tasks: Task[]; total: number }> {
     let query = supabase
       .from('tasks')
-      .select('*, custom_labels(id, label_name)', { count: 'exact' })
+      .select('*', { count: 'exact' })
       .eq('user_id', userId)
       .order('due_date', { ascending: true })
       .order('priority', { ascending: false });
@@ -85,6 +86,7 @@ export const taskService = {
     // Fetch categories for all tasks
     const taskIds = (data || []).map((task: any) => task.id);
     let categoriesMap: { [taskId: string]: Category[] } = {};
+    let labelsMap: { [taskId: string]: Label[] } = {};
 
     if (taskIds.length > 0) {
       const { data: taskCategoriesData } = await supabase
@@ -106,6 +108,27 @@ export const taskService = {
           }
         });
       }
+
+      // Fetch labels for all tasks
+      const { data: taskLabelsData } = await supabase
+        .from('task_labels')
+        .select('task_id, labels(id, name, color)')
+        .in('task_id', taskIds);
+
+      if (taskLabelsData) {
+        taskLabelsData.forEach((tl: any) => {
+          if (!labelsMap[tl.task_id]) {
+            labelsMap[tl.task_id] = [];
+          }
+          if (tl.labels) {
+            labelsMap[tl.task_id].push({
+              id: tl.labels.id,
+              name: tl.labels.name,
+              color: tl.labels.color,
+            });
+          }
+        });
+      }
     }
 
     const tasks = (data || []).map((task: any) => ({
@@ -119,9 +142,9 @@ export const taskService = {
       xpValue: task.xp_value,
       category: task.category,
       categories: categoriesMap[task.id] || [],
+      labels: labelsMap[task.id] || [],
       createdAt: task.created_at,
       updatedAt: task.updated_at,
-      labels: task.custom_labels || [],
     }));
 
     return { tasks, total: count || 0 };
@@ -130,7 +153,7 @@ export const taskService = {
   async getTaskById(taskId: string, userId: string): Promise<Task> {
     const { data, error } = await supabase
       .from('tasks')
-      .select('*, custom_labels(id, label_name)')
+      .select('*')
       .eq('id', taskId)
       .eq('user_id', userId)
       .single();
@@ -153,6 +176,18 @@ export const taskService = {
       color: tc.categories.color,
     }));
 
+    // Fetch labels for this task
+    const { data: taskLabelsData } = await supabase
+      .from('task_labels')
+      .select('labels(id, name, color)')
+      .eq('task_id', taskId);
+
+    const labels = (taskLabelsData || []).map((tl: any) => ({
+      id: tl.labels.id,
+      name: tl.labels.name,
+      color: tl.labels.color,
+    }));
+
     return {
       id: taskData.id,
       userId: taskData.user_id,
@@ -164,9 +199,9 @@ export const taskService = {
       xpValue: taskData.xp_value,
       category: taskData.category,
       categories: categories,
+      labels: labels,
       createdAt: taskData.created_at,
       updatedAt: taskData.updated_at,
-      labels: taskData.custom_labels || [],
     };
   },
 
@@ -211,14 +246,14 @@ export const taskService = {
     }
 
     // Add labels if provided
-    if (input.labels && input.labels.length > 0) {
-      const labelInserts = input.labels.map((label) => ({
+    if (input.labelIds && input.labelIds.length > 0) {
+      const labelInserts = input.labelIds.map((labelId) => ({
         task_id: taskData.id,
-        label_name: label,
+        label_id: labelId,
       }));
 
       const { error: labelError } = await supabase
-        .from('custom_labels')
+        .from('task_labels')
         .insert(labelInserts as any);
 
       if (labelError) {
@@ -280,22 +315,22 @@ export const taskService = {
     }
 
     // Update labels if provided
-    if (input.labels !== undefined) {
-      // Delete existing labels
+    if (input.labelIds !== undefined) {
+      // Delete existing label associations
       await supabase
-        .from('custom_labels')
+        .from('task_labels')
         .delete()
         .eq('task_id', taskId);
 
-      // Add new labels
-      if (input.labels.length > 0) {
-        const labelInserts = input.labels.map((label) => ({
+      // Add new label associations
+      if (input.labelIds.length > 0) {
+        const labelInserts = input.labelIds.map((labelId) => ({
           task_id: taskId,
-          label_name: label,
+          label_id: labelId,
         }));
 
         await supabase
-          .from('custom_labels')
+          .from('task_labels')
           .insert(labelInserts as any);
       }
     }

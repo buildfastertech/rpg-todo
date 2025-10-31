@@ -27,7 +27,7 @@ export const createTaskSchema = z.object({
   categoryIds: z.array(z.string().uuid('Invalid category ID'))
     .max(10, 'Maximum 10 categories per task')
     .optional(),
-  labels: z.array(z.string().max(50))
+  labelIds: z.array(z.string().uuid('Invalid label ID'))
     .max(20, 'Maximum 20 labels per task')
     .optional(),
 });
@@ -54,7 +54,7 @@ export const updateTaskSchema = z.object({
   categoryIds: z.array(z.string().uuid('Invalid category ID'))
     .max(10, 'Maximum 10 categories per task')
     .optional(),
-  labels: z.array(z.string().max(50))
+  labelIds: z.array(z.string().uuid('Invalid label ID'))
     .max(20, 'Maximum 20 labels per task')
     .optional(),
 });
