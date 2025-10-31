@@ -33,8 +33,15 @@ interface Task {
 interface TaskFilters {
   status?: TaskStatusType;
   priority?: TaskPriorityType;
+  priorities?: TaskPriorityType[];
+  category?: string;
+  categories?: string[];
+  label?: string;
+  labels?: string[];
   page: number;
   limit: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 interface CompleteTaskResult {
@@ -69,8 +76,74 @@ export const taskService = {
       query = query.eq('status', filters.status);
     }
 
-    if (filters.priority) {
+    // Handle priority filters (single or multiple)
+    if (filters.priorities && filters.priorities.length > 0) {
+      query = query.in('priority', filters.priorities);
+    } else if (filters.priority) {
       query = query.eq('priority', filters.priority);
+    }
+
+    // Handle category filters (single or multiple)
+    let categoryFilteredTaskIds: string[] | null = null;
+    const categoriesToFilter = filters.categories && filters.categories.length > 0 
+      ? filters.categories 
+      : filters.category 
+      ? [filters.category] 
+      : null;
+
+    if (categoriesToFilter) {
+      const { data: categoryTasks } = await supabase
+        .from('task_categories')
+        .select('task_id, categories!inner(name)')
+        .in('categories.name', categoriesToFilter);
+
+      if (categoryTasks) {
+        categoryFilteredTaskIds = [...new Set(categoryTasks.map((ct: any) => ct.task_id))];
+        
+        if (categoryFilteredTaskIds.length === 0) {
+          return { tasks: [], total: 0 };
+        }
+        
+        query = query.in('id', categoryFilteredTaskIds);
+      }
+    }
+
+    // Handle label filters (single or multiple)
+    let labelFilteredTaskIds: string[] | null = null;
+    const labelsToFilter = filters.labels && filters.labels.length > 0 
+      ? filters.labels 
+      : filters.label 
+      ? [filters.label] 
+      : null;
+
+    if (labelsToFilter) {
+      const { data: labelTasks } = await supabase
+        .from('task_labels')
+        .select('task_id, labels!inner(name)')
+        .in('labels.name', labelsToFilter);
+
+      if (labelTasks) {
+        labelFilteredTaskIds = [...new Set(labelTasks.map((lt: any) => lt.task_id))];
+        
+        if (labelFilteredTaskIds.length === 0) {
+          return { tasks: [], total: 0 };
+        }
+        
+        // If we also have category filter, intersect the task IDs
+        if (categoryFilteredTaskIds) {
+          const intersectedIds = labelFilteredTaskIds.filter(id => 
+            categoryFilteredTaskIds!.includes(id)
+          );
+          
+          if (intersectedIds.length === 0) {
+            return { tasks: [], total: 0 };
+          }
+          
+          query = query.in('id', intersectedIds);
+        } else {
+          query = query.in('id', labelFilteredTaskIds);
+        }
+      }
     }
 
     const from = (filters.page - 1) * filters.limit;

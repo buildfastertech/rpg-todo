@@ -120,9 +120,12 @@ export interface UpdateTaskData {
 export interface TaskFilters {
   status?: TaskStatus;
   priority?: TaskPriority;
+  priorities?: TaskPriority[];
   category?: string;
+  categories?: string[];
   label?: string;
-  sortBy?: 'due_date' | 'priority' | 'created_at';
+  labels?: string[];
+  sortBy?: 'due_date' | 'priority' | 'created_at' | 'xp_value';
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;

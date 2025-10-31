@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { taskService } from '@/services/task.service';
+import { labelService } from '@/services/label.service';
+import { categoryService } from '@/services/category.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelectFilter } from '@/components/ui/multi-select-filter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TaskCard from '@/components/TaskCard';
 import TaskSkeleton from '@/components/TaskSkeleton';
-import { Plus, Search, SlidersHorizontal, ListTodo } from 'lucide-react';
-import type { Task, TaskStatus, TaskPriority, TaskFilters } from '@/types';
+import { Plus, Search, ListTodo, Filter, ArrowUpDown } from 'lucide-react';
+import type { Task, TaskStatus, TaskPriority, TaskFilters, Label, Category } from '@/types';
 import { toast } from 'sonner';
 import { showErrorToast, showSuccessToast } from '@/utils/errorHandler';
 
@@ -20,6 +23,8 @@ interface TaskListProps {
 
 export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onStatsRefresh }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -31,7 +36,26 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
     page: 1,
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
+  const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+
+  // Load labels and categories on mount
+  useEffect(() => {
+    const loadFiltersData = async () => {
+      try {
+        const [fetchedLabels, fetchedCategories] = await Promise.all([
+          labelService.getLabels(),
+          categoryService.getCategories(),
+        ]);
+        setLabels(fetchedLabels);
+        setCategories(fetchedCategories);
+      } catch (error) {
+        console.error('Failed to load filter data:', error);
+      }
+    };
+    loadFiltersData();
+  }, []);
 
   useEffect(() => {
     loadTasks();
@@ -113,10 +137,29 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
     setFilters({ ...filters, status, page: 1 });
   };
 
-  const handlePriorityFilter = (priority: string) => {
+  const handlePriorityFilter = (priorities: string[]) => {
+    setSelectedPriorities(priorities);
     setFilters({
       ...filters,
-      priority: priority === 'all' ? undefined : (priority as TaskPriority),
+      priorities: priorities.length > 0 ? priorities as TaskPriority[] : undefined,
+      page: 1,
+    });
+  };
+
+  const handleCategoryFilter = (categories: string[]) => {
+    setSelectedCategories(categories);
+    setFilters({
+      ...filters,
+      categories: categories.length > 0 ? categories : undefined,
+      page: 1,
+    });
+  };
+
+  const handleLabelFilter = (labels: string[]) => {
+    setSelectedLabels(labels);
+    setFilters({
+      ...filters,
+      labels: labels.length > 0 ? labels : undefined,
       page: 1,
     });
   };
@@ -135,6 +178,11 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
         task.description?.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : tasks;
+
+  const hasActiveFilters = 
+    selectedPriorities.length > 0 || 
+    selectedCategories.length > 0 || 
+    selectedLabels.length > 0;
 
   return (
     <div className="space-y-6">
@@ -162,74 +210,73 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
       </Tabs>
 
       {/* Search and Filters */}
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setShowFilters(!showFilters)}
-            className={showFilters ? 'bg-slate-100 dark:bg-neutral-800' : ''}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search bar - left side */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder="Search tasks..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9"
+          />
         </div>
 
-        {/* Filter options */}
-        {showFilters && (
-          <div className="flex flex-wrap gap-3 rounded-lg border bg-slate-50 p-4 dark:bg-neutral-900">
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 block">
-                Priority
-              </label>
-              <Select
-                value={filters.priority || 'all'}
-                onValueChange={handlePriorityFilter}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All priorities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All priorities</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Urgent">Urgent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Filters - right side */}
+        <div className="flex gap-2 flex-wrap">
+          <MultiSelectFilter
+            options={[
+              { value: 'Low', label: 'Low' },
+              { value: 'Medium', label: 'Medium' },
+              { value: 'High', label: 'High' },
+              { value: 'Urgent', label: 'Urgent' },
+            ]}
+            selected={selectedPriorities}
+            onChange={handlePriorityFilter}
+            placeholder="Priority"
+            icon={<Filter className="h-4 w-4" />}
+            emptyText="No priorities found"
+          />
 
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 block">
-                Sort by
-              </label>
-              <Select value={filters.sortBy} onValueChange={handleSortChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="due_date">Due Date</SelectItem>
-                  <SelectItem value="priority">Priority</SelectItem>
-                  <SelectItem value="created_at">Created Date</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
+          <MultiSelectFilter
+            options={categories.map((cat) => ({ value: cat.name, label: cat.name }))}
+            selected={selectedCategories}
+            onChange={handleCategoryFilter}
+            placeholder="Category"
+            icon={<Filter className="h-4 w-4" />}
+            emptyText="No categories found"
+          />
+
+          <MultiSelectFilter
+            options={labels.map((label) => ({ value: label.name, label: label.name }))}
+            selected={selectedLabels}
+            onChange={handleLabelFilter}
+            placeholder="Label"
+            icon={<Filter className="h-4 w-4" />}
+            emptyText="No labels found"
+          />
+
+          <Select value={filters.sortBy} onValueChange={handleSortChange}>
+            <SelectTrigger className="w-[140px]">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown className="h-4 w-4" />
+                <SelectValue placeholder="Sort by" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="due_date">Due Date</SelectItem>
+              <SelectItem value="priority">Priority</SelectItem>
+              <SelectItem value="xp_value">XP Value</SelectItem>
+              <SelectItem value="created_at">Created Date</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Loading state */}
       {isLoading && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
             <TaskSkeleton key={i} />
           ))}
         </div>
@@ -237,7 +284,7 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
 
       {/* Task grid */}
       {!isLoading && filteredTasks && filteredTasks.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredTasks.map((task) => (
             <TaskCard
               key={task.id}
@@ -258,19 +305,29 @@ export default function TaskList({ onCreateTask, onEditTask, refreshTrigger, onS
             <ListTodo className="h-8 w-8 text-slate-400" />
           </div>
           <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white">
-            No tasks found
+            {searchQuery || hasActiveFilters
+              ? 'No matching tasks'
+              : filters.status === 'open'
+              ? 'No tasks found'
+              : `No ${filters.status} tasks`}
           </h3>
           <p className="mb-6 text-sm text-slate-600 dark:text-slate-400">
-            {searchQuery
-              ? 'Try adjusting your search or filters'
+            {searchQuery || hasActiveFilters
+              ? 'Try adjusting your search or filters to find what you\'re looking for'
               : filters.status === 'open'
               ? 'Create your first task to start earning XP!'
-              : `You don't have any ${filters.status} tasks`}
+              : `You don't have any ${filters.status} tasks yet`}
           </p>
-          {!searchQuery && filters.status === 'open' && (
+          {!searchQuery && !hasActiveFilters && filters.status === 'open' && (
             <Button onClick={onCreateTask} className="cursor-pointer">
               <Plus className="mr-2 h-4 w-4" />
               Create Your First Task
+            </Button>
+          )}
+          {(searchQuery || hasActiveFilters) && (
+            <Button onClick={onCreateTask} variant="outline" className="cursor-pointer">
+              <Plus className="mr-2 h-4 w-4" />
+              Create New Task
             </Button>
           )}
         </div>

@@ -7,11 +7,41 @@ export const taskController = {
   async getTasks(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = req.user!.userId;
-      const { status, priority, page = '1', limit = '25' } = req.query;
+      const { status, priority, priorities, category, categories, label, labels, sortBy, sortOrder, page = '1', limit = '25' } = req.query;
+
+      // Parse array parameters (they come as comma-separated strings or arrays)
+      const parsePriorities = (): TaskPriorityType[] | undefined => {
+        if (priorities) {
+          const arr = Array.isArray(priorities) ? priorities : String(priorities).split(',');
+          return arr.map(p => String(p).trim() as TaskPriorityType);
+        }
+        return undefined;
+      };
+
+      const parseCategories = (): string[] | undefined => {
+        if (categories) {
+          return Array.isArray(categories) ? categories.map(c => String(c)) : String(categories).split(',').map(c => c.trim());
+        }
+        return undefined;
+      };
+
+      const parseLabels = (): string[] | undefined => {
+        if (labels) {
+          return Array.isArray(labels) ? labels.map(l => String(l)) : String(labels).split(',').map(l => l.trim());
+        }
+        return undefined;
+      };
 
       const filters = {
         status: status as TaskStatusType | undefined,
         priority: priority as TaskPriorityType | undefined,
+        priorities: parsePriorities(),
+        category: category as string | undefined,
+        categories: parseCategories(),
+        label: label as string | undefined,
+        labels: parseLabels(),
+        sortBy: sortBy as string | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
         page: parseInt(page as string, 10),
         limit: parseInt(limit as string, 10),
       };
