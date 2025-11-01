@@ -67,7 +67,7 @@ export function MultiSelectFilter({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[140px] justify-between h-10"
+          className="w-[140px] justify-between h-9"
         >
           <div className="flex items-center gap-2 flex-1 overflow-hidden">
             {icon}
