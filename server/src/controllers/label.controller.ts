@@ -8,7 +8,10 @@ export const labelController = {
     try {
       const userId = req.user!.userId;
       const labels = await labelService.getLabels(userId);
-      res.json(labels);
+      res.json({
+        success: true,
+        data: labels,
+      });
     } catch (error) {
       next(error);
     }
@@ -19,7 +22,10 @@ export const labelController = {
       const userId = req.user!.userId;
       const { id } = req.params;
       const label = await labelService.getLabelById(id, userId);
-      res.json(label);
+      res.json({
+        success: true,
+        data: label,
+      });
     } catch (error) {
       next(error);
     }
@@ -30,7 +36,11 @@ export const labelController = {
       const userId = req.user!.userId;
       const input: CreateLabelInput = req.body;
       const label = await labelService.createLabel(userId, input);
-      res.status(201).json(label);
+      res.status(201).json({
+        success: true,
+        message: 'Label created successfully',
+        data: label,
+      });
     } catch (error) {
       next(error);
     }
@@ -42,7 +52,11 @@ export const labelController = {
       const { id } = req.params;
       const input: UpdateLabelInput = req.body;
       const label = await labelService.updateLabel(id, userId, input);
-      res.json(label);
+      res.json({
+        success: true,
+        message: 'Label updated successfully',
+        data: label,
+      });
     } catch (error) {
       next(error);
     }
