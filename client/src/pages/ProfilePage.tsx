@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { userService } from '@/services/user.service';
 import MainLayout from '@/components/layout/MainLayout';
-import { PullToRefresh } from '@/components/PullToRefresh';
 import ProfileSkeleton from '@/components/ProfileSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -165,11 +164,6 @@ export default function ProfilePage() {
     };
   };
 
-  const handleRefresh = async () => {
-    await Promise.all([loadProfileData(), loadXPHistory(historyPage)]);
-    await new Promise(resolve => setTimeout(resolve, 500));
-  };
-
   if (isLoading) {
     return (
       <MainLayout>
@@ -180,8 +174,7 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
-      <PullToRefresh onRefresh={handleRefresh}>
-        <div className="space-y-6">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Profile</h1>
@@ -421,8 +414,7 @@ export default function ProfilePage() {
             )}
           </CardContent>
         </Card>
-        </div>
-      </PullToRefresh>
+      </div>
     </MainLayout>
   );
 }
