@@ -1,20 +1,12 @@
-import PullToRefreshLib from 'react-simple-pull-to-refresh';
+import React from 'react';
 
-interface PullToRefreshWrapperProps {
+interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
   children: React.ReactNode;
   disabled?: boolean;
 }
 
-export function PullToRefresh({ onRefresh, children, disabled = false }: PullToRefreshWrapperProps) {
-  return (
-    <PullToRefreshLib
-      onRefresh={onRefresh}
-      pullingContent=""
-      isPullable={!disabled}
-      className="h-full"
-    >
-      {children}
-    </PullToRefreshLib>
-  );
+// Pull-to-refresh functionality removed due to conflicts with native scroll behavior
+export function PullToRefresh({ children }: PullToRefreshProps) {
+  return <>{children}</>;
 }
