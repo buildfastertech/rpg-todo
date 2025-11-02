@@ -260,8 +260,8 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col gap-0 p-0 sm:max-h-[90vh]">
+        <DialogHeader className="px-6 pt-6 pb-4 shrink-0">
           <DialogTitle>{task ? 'Edit Task' : 'Create New Task'}</DialogTitle>
           <DialogDescription>
             {task
@@ -271,7 +271,8 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 min-h-0">
+            <div className="overflow-y-auto px-6 py-4 space-y-4 flex-1">
             {/* Title */}
             <FormField
               control={form.control}
@@ -429,7 +430,9 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
                 </FormItem>
               )}
             />
+          </div>
 
+          <div className="border-t px-6 py-4 shrink-0 space-y-4">
             {/* XP Estimate */}
             <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-900/20">
               <div className="flex items-center justify-between">
@@ -461,10 +464,10 @@ export default function TaskFormDialog({ open, onOpenChange, task, onSuccess }: 
                 {isSubmitting ? 'Saving...' : task ? 'Update Task' : 'Create Task'}
               </Button>
             </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        </form>
+      </Form>
+    </DialogContent>
+  </Dialog>
   );
 }
-
