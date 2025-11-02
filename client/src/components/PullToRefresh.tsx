@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowDown } from 'lucide-react';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void>;
@@ -15,7 +15,7 @@ export function PullToRefresh({ onRefresh, children, disabled = false }: PullToR
   const containerRef = useRef<HTMLDivElement>(null);
 
   const threshold = 80; // Distance to trigger refresh
-  const maxPullDistance = 120;
+  const maxPullDistance = 150;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -38,9 +38,17 @@ export function PullToRefresh({ onRefresh, children, disabled = false }: PullToR
       if (distance > 0 && container.scrollTop === 0) {
         // Prevent default scrolling when pulling down
         e.preventDefault();
-        // Use ease-out effect for natural feel
-        const easedDistance = Math.min(distance * 0.5, maxPullDistance);
-        setPullDistance(easedDistance);
+        // Use progressive resistance for natural feel
+        let easedDistance: number;
+        if (distance <= threshold) {
+          // Normal pull up to threshold
+          easedDistance = distance * 0.6;
+        } else {
+          // Increased resistance after threshold
+          const extraDistance = distance - threshold;
+          easedDistance = (threshold * 0.6) + (extraDistance * 0.2);
+        }
+        setPullDistance(Math.min(easedDistance, maxPullDistance));
       }
     };
 
@@ -49,9 +57,9 @@ export function PullToRefresh({ onRefresh, children, disabled = false }: PullToR
 
       setIsPulling(false);
 
-      if (pullDistance >= threshold && !isRefreshing) {
+      if (pullDistance >= (threshold * 0.6) && !isRefreshing) {
         setIsRefreshing(true);
-        setPullDistance(threshold);
+        setPullDistance(threshold * 0.6);
         
         try {
           await onRefresh();
@@ -78,40 +86,87 @@ export function PullToRefresh({ onRefresh, children, disabled = false }: PullToR
     };
   }, [isPulling, pullDistance, isRefreshing, onRefresh, disabled]);
 
-  const rotation = (pullDistance / threshold) * 360;
-  const opacity = Math.min(pullDistance / threshold, 1);
+  const thresholdAdjusted = threshold * 0.6; // Adjusted for easing
+  const progress = Math.min(pullDistance / thresholdAdjusted, 1);
+  const rotation = progress * 360;
+  const scale = 0.5 + (progress * 0.5); // Scale from 0.5 to 1
+  const indicatorY = Math.max(pullDistance - 20, 0);
+
+  // Determine if we're ready to refresh
+  const isReady = pullDistance >= thresholdAdjusted && !isRefreshing;
 
   return (
     <div ref={containerRef} className="relative h-full overflow-auto">
-      {/* Pull indicator */}
+      {/* Pull indicator - positioned above content, visible during pull */}
       <div
-        className="absolute left-1/2 -translate-x-1/2 z-50 transition-all duration-200"
+        className="sticky top-0 left-0 right-0 z-50 pointer-events-none flex items-center justify-center"
         style={{
-          top: pullDistance > 0 ? `${pullDistance - 40}px` : '-40px',
-          opacity: opacity,
+          height: pullDistance > 0 ? `${Math.min(pullDistance + 20, 100)}px` : '0px',
+          opacity: pullDistance > 0 ? Math.min(progress * 1.5, 1) : 0,
+          transition: isPulling ? 'none' : 'all 150ms ease-out',
+          overflow: 'visible',
         }}
       >
-        <div className="flex items-center justify-center">
-          <Loader2
-            className={`h-6 w-6 text-primary ${
-              isRefreshing ? 'animate-spin' : ''
-            }`}
-            style={{
-              transform: !isRefreshing ? `rotate(${rotation}deg)` : undefined,
-            }}
+        <div
+          className="relative"
+          style={{
+            transform: `scale(${scale}) translateY(${Math.min(pullDistance * 0.3, 10)}px)`,
+            width: '48px',
+            height: '48px',
+          }}
+        >
+          {/* Background circle */}
+          <div 
+            className="absolute inset-0 rounded-full bg-white dark:bg-neutral-800 shadow-lg"
           />
+          
+          {/* Progress ring */}
+          <svg className="absolute inset-0" width="48" height="48" style={{ transform: 'rotate(-90deg)' }}>
+            <circle
+              cx="24"
+              cy="24"
+              r="20"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+              className="text-slate-200 dark:text-neutral-700"
+            />
+            <circle
+              cx="24"
+              cy="24"
+              r="20"
+              stroke="currentColor"
+              strokeWidth="2"
+              fill="none"
+              className="text-primary transition-all duration-150 ease-out"
+              strokeDasharray={`${2 * Math.PI * 20}`}
+              strokeDashoffset={`${2 * Math.PI * 20 * (1 - progress)}`}
+              strokeLinecap="round"
+            />
+          </svg>
+          
+          {/* Icon */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            {isRefreshing ? (
+              <Loader2 className="h-5 w-5 text-primary animate-spin" />
+            ) : isReady ? (
+              <Loader2 
+                className="h-5 w-5 text-primary transition-all duration-150"
+              />
+            ) : (
+              <ArrowDown
+                className="h-5 w-5 text-slate-600 dark:text-slate-400 transition-all duration-150"
+                style={{
+                  transform: `rotate(${rotation}deg)`,
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Content wrapper with transform */}
-      <div
-        className="transition-transform duration-200 ease-out"
-        style={{
-          transform: `translateY(${pullDistance > 0 ? pullDistance : 0}px)`,
-        }}
-      >
-        {children}
-      </div>
+      {/* Content */}
+      {children}
     </div>
   );
 }

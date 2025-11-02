@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { achievementService } from '@/services/achievement.service';
 import MainLayout from '@/components/layout/MainLayout';
+import { PullToRefresh } from '@/components/PullToRefresh';
 import AchievementsSkeleton from '@/components/AchievementsSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +71,11 @@ export default function AchievementsPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    await loadAchievements();
+    await new Promise(resolve => setTimeout(resolve, 500));
+  };
+
   const unlockedCount = (achievementsWithProgress || []).filter((a) => a.unlocked).length;
   const totalCount = (achievementsWithProgress || []).length;
 
@@ -83,7 +89,8 @@ export default function AchievementsPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Achievements</h1>
@@ -262,7 +269,8 @@ export default function AchievementsPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+        </div>
+      </PullToRefresh>
     </MainLayout>
   );
 }
