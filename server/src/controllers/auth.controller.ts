@@ -8,6 +8,18 @@ export const authController = {
       const input: RegisterInput = req.body;
       const result = await authService.register(input);
 
+      // Handle redirect to login case (email already exists)
+      if (result.redirectToLogin) {
+        res.status(200).json({
+          success: true,
+          message: 'Please login to continue',
+          data: {
+            redirectToLogin: true,
+          },
+        });
+        return;
+      }
+
       res.status(201).json({
         success: true,
         message: 'Registration successful',

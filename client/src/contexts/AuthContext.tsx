@@ -56,7 +56,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (data: RegisterData) => {
     try {
       const response = await authService.register(data);
-      setUser(response.data.user);
+      
+      // Handle redirect to login case (email already exists)
+      if (response.data.redirectToLogin) {
+        navigate('/login');
+        return;
+      }
+      
+      if (response.data.user) {
+        setUser(response.data.user);
+      }
       
       if (response.data.xpAwarded) {
         toast.success(`Account created! +${response.data.xpAwarded} XP to get you started!`);

@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -24,12 +25,15 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
 
     try {
       await login({ email, password });
-    } catch (error) {
-      // Error handling is done in AuthContext with toast
+    } catch (error: any) {
+      // Display error message on the page
+      const message = error.response?.data?.message || 'Invalid email or password. Please try again.';
+      setError(message);
       console.error('Login error:', error);
     } finally {
       setIsLoading(false);
@@ -90,6 +94,11 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4 pt-2">
             <Button type="submit" className="w-full cursor-pointer" disabled={isLoading}>

@@ -5,14 +5,15 @@ import { ConflictError, UnauthorizedError, BadRequestError } from '../utils/erro
 import type { RegisterInput, LoginInput } from '../validators/auth.validator';
 
 interface RegisterResponse {
-  user: {
+  user?: {
     id: string;
     username: string;
     email: string;
     level: number;
     totalXp: number;
   };
-  token: string;
+  token?: string;
+  redirectToLogin?: boolean;
 }
 
 interface LoginResponse {
@@ -31,15 +32,30 @@ export const authService = {
   async register(input: RegisterInput): Promise<RegisterResponse> {
     const { username, email, password } = input;
 
-    // Check if user already exists
-    const { data: existingUser } = await supabase
+    // Check if email already exists (for security, redirect to login without error)
+    const { data: existingEmail } = await supabase
       .from('users')
       .select('id')
-      .or(`username.eq.${username},email.eq.${email}`)
+      .eq('email', email)
       .maybeSingle();
 
-    if (existingUser) {
-      throw new ConflictError('Username or email already exists');
+    if (existingEmail) {
+      // For security reasons, don't reveal that email exists
+      // Return a success-like response but flag to redirect to login
+      return {
+        redirectToLogin: true,
+      };
+    }
+
+    // Check if username already exists
+    const { data: existingUsername } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (existingUsername) {
+      throw new ConflictError('Username already exists');
     }
 
     // Hash password

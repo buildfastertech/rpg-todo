@@ -537,7 +537,6 @@ This ensures LLM agents have proper context without loading all documentation un
 
 ### To-dos
 
-**Backend (Complete):**
 - [x] Create MDC files for framework standards (react, express, shadcn, tailwind, supabase) and framework glossary
 - [x] Create Supabase database schema (6 tables: Users, Tasks, Achievements, Achievement_User, Custom_Labels, Points_Ledger with proper indexes and RLS)
 - [x] Create database functions (get_user_total_xp, calculate_level_from_xp, award_xp, get_completed_task_count, get_urgent_tasks_this_week)
@@ -549,8 +548,6 @@ This ensures LLM agents have proper context without loading all documentation un
 - [x] Build task routes (GET, POST, PUT, DELETE, PATCH /api/tasks) with ledger-based XP rewards
 - [x] Build achievement routes (GET /api/achievements, GET /api/achievements/user, GET /api/achievements/progress, POST /api/achievements/check)
 - [x] Implement achievement tracking system using achievement_user join table (auto-check on task completion)
-
-**Frontend (In Progress):**
 - [x] Initialize React app with Vite + TypeScript
 - [x] Configure TailwindCSS and install Shadcn UI components
 - [x] Install additional dependencies (React Router, Axios, date-fns, lucide-react, sonner)

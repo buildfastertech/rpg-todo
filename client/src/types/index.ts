@@ -48,12 +48,13 @@ export interface RegisterData {
 export interface AuthResponse {
   success: boolean;
   data: {
-    user: User;
-    token: string;
+    user?: User;
+    token?: string;
     xpAwarded?: number;
     newTotalXp?: number;
     newLevel?: number;
     leveledUp?: boolean;
+    redirectToLogin?: boolean;
   };
 }
 
